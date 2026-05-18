@@ -8,6 +8,83 @@
 
 .fts-v2-mobile-book-bar { display: none !important; }
 
+/* Sprint 6: minimal safeguards for VM-enhanced copy without changing layout logic */
+.fts-v2-hero .fts-v2-about-item {
+    min-width: 0 !important;
+}
+
+.fts-v2-hero .fts-v2-about-title,
+.fts-v2-hero .fts-v2-about-desc {
+    overflow-wrap: anywhere;
+}
+
+.fts-v2-root .fts-v2-facts-list {
+    max-width: 100%;
+}
+
+.fts-v2-root .fts-v2-fact,
+.fts-v2-root .fts-v2-fact-text {
+    min-width: 0 !important;
+}
+
+.fts-v2-root .fts-v2-fact {
+    max-width: 100%;
+}
+
+.fts-v2-root .fts-v2-fact-label,
+.fts-v2-root .fts-v2-fact-value {
+    overflow-wrap: anywhere;
+}
+
+.fts-v2-booking-card .fts-v2-sidebar-highlights {
+    gap: 4px !important;
+}
+
+.fts-v2-booking-card .fts-v2-booking-trust-item {
+    min-width: 0 !important;
+    line-height: 1.45 !important;
+}
+
+.fts-v2-content-sections .fts-v2-packages-grid {
+    align-items: stretch;
+}
+
+.fts-v2-packages-grid .fts-v2-package-card {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    padding-top: 42px !important;
+}
+
+.fts-v2-packages-grid .fts-v2-package-badge {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+    align-self: flex-start !important;
+    max-width: 100% !important;
+    margin: 0 8px 8px 0 !important;
+    white-space: normal !important;
+    text-align: center !important;
+}
+
+.fts-v2-packages-grid .fts-v2-package-name,
+.fts-v2-packages-grid .fts-v2-package-desc,
+.fts-v2-packages-grid .fts-v2-package-features li {
+    overflow-wrap: anywhere;
+}
+
+.fts-v2-packages-grid .fts-v2-package-desc-wrap,
+.fts-v2-packages-grid .fts-v2-package-features {
+    min-width: 0 !important;
+}
+
+.fts-v2-packages-grid .fts-v2-desc-toggle {
+    align-self: flex-start !important;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
 @media (max-width: 992px) {
 
     .fts-v2-main-layout { flex-direction: column !important; }
@@ -266,6 +343,12 @@
     .fts-v2-pkg-current { font-size: 20px !important; }
 
     .fts-v2-package-select-btn { font-size: 12px !important; padding: 10px !important; }
+    .fts-v2-packages-grid .fts-v2-package-card { padding-top: 20px !important; }
+    .fts-v2-packages-grid .fts-v2-package-badge {
+        font-size: 11px !important;
+        padding: 4px 12px !important;
+        margin: 0 6px 6px 0 !important;
+    }
 
 
 
@@ -417,6 +500,12 @@
     .fts-v2-faq-answer { font-size: 11px !important; }
 
     .fts-v2-review-text { font-size: 11px !important; }
+
+    .fts-v2-booking-card .fts-v2-sidebar-highlights { padding: 8px 14px !important; }
+    .fts-v2-booking-card .fts-v2-booking-trust-item { font-size: 10px !important; }
+    .fts-v2-packages-grid .fts-v2-package-desc { font-size: 12px !important; }
+    .fts-v2-packages-grid .fts-v2-package-features li { font-size: 11px !important; }
+    .fts-v2-packages-grid .fts-v2-package-badge { max-width: calc(100% - 6px) !important; }
 
     .fts-v2-price-current { font-size: 18px !important; }
 
