@@ -2,8 +2,108 @@
 /**
  * Sidebar V2 — Sticky Booking Sidebar (CRO Optimized)
  * Variables provided by layout-controller.php via extract()
+ *
+ * @var bool                              $use_frontend_view_model
+ * @var array<string,mixed>               $vm_cta
+ * @var array<string,mixed>               $vm_trust
+ * @var float|int|string                  $avg_rating
+ * @var int|string                        $review_count
+ * @var float|int|string                  $old_price
+ * @var float|int|string                  $display_price
+ * @var int|string                        $discount_pct
+ * @var string                            $free_cancellation_text
+ * @var int|string                        $cancel_hours
+ * @var bool                              $pp_eligible
+ * @var string                            $pay_later_text
+ * @var string                            $duration_text
+ * @var array<int,array<string,mixed>>    $trip_facts_items
+ * @var string|array                      $cost_includes
+ * @var string                            $enquiry_enabled
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
+
+$fts_use_frontend_vm = ! empty( $use_frontend_view_model );
+$fts_vm_cta   = ( isset( $vm_cta ) && is_array( $vm_cta ) ) ? $vm_cta : array();
+$fts_vm_trust = ( isset( $vm_trust ) && is_array( $vm_trust ) ) ? $vm_trust : array();
+
+$fts_vm_scalar = static function( $source, $key, $fallback = '' ) {
+    if ( ! is_array( $source ) || ! array_key_exists( $key, $source ) || ! is_scalar( $source[ $key ] ) ) {
+        return $fallback;
+    }
+
+    $value = trim( (string) $source[ $key ] );
+    return $value !== '' ? $value : $fallback;
+};
+
+$fts_vm_text_list = static function( $source, $key ) {
+    $items = array();
+
+    if ( ! is_array( $source ) || empty( $source[ $key ] ) || ! is_array( $source[ $key ] ) ) {
+        return $items;
+    }
+
+    foreach ( $source[ $key ] as $raw_item ) {
+        $text = '';
+
+        if ( is_scalar( $raw_item ) ) {
+            $text = trim( (string) $raw_item );
+        } elseif ( is_array( $raw_item ) ) {
+            foreach ( array( 'text', 'label', 'value', 'title' ) as $item_key ) {
+                if ( isset( $raw_item[ $item_key ] ) && is_scalar( $raw_item[ $item_key ] ) ) {
+                    $text = trim( (string) $raw_item[ $item_key ] );
+                    if ( $text !== '' ) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if ( $text !== '' ) {
+            $items[] = $text;
+        }
+    }
+
+    return $items;
+};
+
+$fts_sidebar_rating = isset( $avg_rating ) ? floatval( $avg_rating ) : 0;
+if ( $fts_use_frontend_vm && isset( $fts_vm_trust['rating'] ) && is_numeric( $fts_vm_trust['rating'] ) ) {
+    $fts_vm_rating = floatval( $fts_vm_trust['rating'] );
+    if ( $fts_vm_rating > 0 ) {
+        $fts_sidebar_rating = $fts_vm_rating;
+    }
+}
+
+$fts_sidebar_review_count = isset( $review_count ) ? max( 0, intval( $review_count ) ) : 0;
+if ( $fts_use_frontend_vm && isset( $fts_vm_trust['reviews_count'] ) && is_numeric( $fts_vm_trust['reviews_count'] ) ) {
+    $fts_vm_reviews_count = max( 0, intval( $fts_vm_trust['reviews_count'] ) );
+    if ( $fts_vm_reviews_count > 0 || $fts_sidebar_rating > 0 ) {
+        $fts_sidebar_review_count = $fts_vm_reviews_count;
+    }
+}
+
+$fts_cta_badge = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'badge', '' ) : '';
+$fts_cta_headline = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'headline', '' ) : '';
+$fts_cta_subheadline = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'subheadline', '' ) : '';
+$fts_cta_primary_button_text = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'primary_button_text', '' ) : '';
+$fts_cta_secondary_button_text = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'secondary_button_text', '' ) : '';
+$fts_cta_urgency = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'urgency', '' ) : '';
+$fts_cta_trust_points = $fts_use_frontend_vm ? $fts_vm_text_list( $fts_vm_cta, 'trust_points' ) : array();
+
+$fts_sidebar_cancel_text = '';
+if ( isset( $free_cancellation_text ) && is_string( $free_cancellation_text ) && trim( $free_cancellation_text ) !== '' ) {
+    $fts_sidebar_cancel_text = trim( $free_cancellation_text );
+} elseif ( isset( $cancel_hours ) && intval( $cancel_hours ) > 0 ) {
+    $fts_sidebar_cancel_text = sprintf( esc_html__( 'Free cancellation up to %s hours in advance', 'fts' ), intval( $cancel_hours ) );
+}
+
+if ( $fts_cta_primary_button_text === '' ) {
+    $fts_cta_primary_button_text = esc_html__( 'Check availability', 'fts' );
+}
+
+if ( $fts_cta_secondary_button_text === '' ) {
+    $fts_cta_secondary_button_text = esc_html__( 'Support via WhatsApp', 'fts' );
+}
 
 $wa_raw    = trim( (string) apply_filters( 'fts_whatsapp_number', '+201000479285' ) );
 $wa_digits = preg_replace( '/\D+/', '', $wa_raw );
@@ -18,10 +118,10 @@ $wa_digits = preg_replace( '/\D+/', '', $wa_raw );
             <div class="fts-v2-booking-price-top">
                 <div class="fts-v2-booking-price-header">
                     <div class="fts-v2-booking-from"><?php echo esc_html__( 'From', 'fts' ); ?></div>
-                    <?php if ( $avg_rating > 0 ) : ?>
+                    <?php if ( $fts_sidebar_rating > 0 ) : ?>
                     <a class="fts-v2-booking-rating fts-v2-meta-tidx" href="#fts-v2-sec-reviews">
-                        <i class="fa fa-star"></i> <?php echo esc_html( number_format( (float) $avg_rating, 1 ) ); ?>
-                        <span>(<?php echo intval( $review_count ); ?>)</span>
+                        <i class="fa fa-star"></i> <?php echo esc_html( number_format( $fts_sidebar_rating, 1 ) ); ?>
+                        <span>(<?php echo intval( $fts_sidebar_review_count ); ?>)</span>
                     </a>
                     <?php endif; ?>
                 </div>
@@ -108,77 +208,80 @@ $wa_digits = preg_replace( '/\D+/', '', $wa_raw );
             <?php
                 $sb_items = array();
 
-                if ( isset( $cancel_hours ) && intval( $cancel_hours ) > 0 ) {
-                    $fts_sb_cancel = '';
-                    if ( isset( $free_cancellation_text ) && is_string( $free_cancellation_text ) && trim( $free_cancellation_text ) !== '' ) {
-                        $fts_sb_cancel = trim( $free_cancellation_text );
-                    } else {
-                        $fts_sb_cancel = sprintf( esc_html__( 'Free cancellation up to %s hours in advance', 'fts' ), intval( $cancel_hours ) );
+                if ( ! empty( $fts_cta_trust_points ) ) {
+                    foreach ( $fts_cta_trust_points as $fts_cta_trust_point ) {
+                        $sb_items[] = array(
+                            'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+                            'text' => $fts_cta_trust_point,
+                        );
                     }
-                    $sb_items[] = array(
-                        'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M9 16l2 2 4-4"/></svg>',
-                        'text' => $fts_sb_cancel,
-                    );
-                }
-
-                if ( ! empty( $pp_eligible ) && isset( $pay_later_text ) && is_string( $pay_later_text ) && trim( $pay_later_text ) !== '' ) {
-                    $sb_items[] = array(
-                        'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>',
-                        'text' => trim( $pay_later_text ),
-                    );
-                }
-
-                if ( ! empty( $duration_text ) ) {
-                    $sb_items[] = array(
-                        'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-                        'text' => __( 'Duration', 'fts' ) . ' ' . esc_html( $duration_text ),
-                    );
-                }
-
-                $sb_lang   = '';
-                $sb_pickup = '';
-                if ( isset( $trip_facts_items ) && is_array( $trip_facts_items ) ) {
-                    foreach ( $trip_facts_items as $sbit ) {
-                        if ( ! is_array( $sbit ) ) continue;
-                        $sblbl = strtolower( trim( (string) ( $sbit['label'] ?? '' ) ) );
-                        $sbval = trim( (string) ( $sbit['value'] ?? '' ) );
-                        if ( $sblbl === '' || $sbval === '' ) continue;
-                        if ( $sb_lang === '' && ( strpos( $sblbl, 'language' ) !== false || strpos( $sblbl, 'languages' ) !== false || strpos( $sblbl, 'لغة' ) !== false ) ) $sb_lang = $sbval;
-                        if ( $sb_pickup === '' && ( strpos( $sblbl, 'pickup' ) !== false || strpos( $sblbl, 'meeting' ) !== false || strpos( $sblbl, 'start' ) !== false || strpos( $sblbl, 'استلام' ) !== false ) ) $sb_pickup = $sbval;
+                } else {
+                    if ( $fts_sidebar_cancel_text !== '' ) {
+                        $sb_items[] = array(
+                            'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M9 16l2 2 4-4"/></svg>',
+                            'text' => $fts_sidebar_cancel_text,
+                        );
                     }
-                }
 
-                if ( $sb_lang !== '' ) {
-                    $sb_items[] = array(
-                        'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>',
-                        'text' => __( 'Live tour guide', 'fts' ) . ' — ' . $sb_lang,
-                    );
-                }
+                    if ( ! empty( $pp_eligible ) && isset( $pay_later_text ) && is_string( $pay_later_text ) && trim( $pay_later_text ) !== '' ) {
+                        $sb_items[] = array(
+                            'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>',
+                            'text' => trim( $pay_later_text ),
+                        );
+                    }
 
-                if ( $sb_pickup !== '' ) {
-                    $sb_items[] = array(
-                        'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10l-2-4H7L5 10l-2.5 1.1C1.7 11.3 1 12.1 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 10h14"/></svg>',
-                        'text' => __( 'Pickup included', 'fts' ),
-                    );
-                }
+                    if ( ! empty( $duration_text ) ) {
+                        $sb_items[] = array(
+                            'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+                            'text' => __( 'Duration', 'fts' ) . ' ' . esc_html( $duration_text ),
+                        );
+                    }
 
-                $sb_ci = is_array( $cost_includes ?? '' ) ? implode( "\n", $cost_includes ) : (string) ( $cost_includes ?? '' );
-                $sb_ci_lc = strtolower( $sb_ci );
-                $sb_meal_title = '';
-                if ( strpos( $sb_ci_lc, 'lunch' ) !== false && strpos( $sb_ci_lc, 'breakfast' ) !== false ) {
-                    $sb_meal_title = __( 'Breakfast & Lunch included', 'fts' );
-                } elseif ( strpos( $sb_ci_lc, 'lunch' ) !== false ) {
-                    $sb_meal_title = __( 'Lunch included', 'fts' );
-                } elseif ( strpos( $sb_ci_lc, 'breakfast' ) !== false ) {
-                    $sb_meal_title = __( 'Breakfast included', 'fts' );
-                } elseif ( strpos( $sb_ci_lc, 'meal' ) !== false ) {
-                    $sb_meal_title = __( 'Meals included', 'fts' );
-                }
-                if ( $sb_meal_title !== '' ) {
-                    $sb_items[] = array(
-                        'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>',
-                        'text' => $sb_meal_title,
-                    );
+                    $sb_lang   = '';
+                    $sb_pickup = '';
+                    if ( isset( $trip_facts_items ) && is_array( $trip_facts_items ) ) {
+                        foreach ( $trip_facts_items as $sbit ) {
+                            if ( ! is_array( $sbit ) ) continue;
+                            $sblbl = strtolower( trim( (string) ( $sbit['label'] ?? '' ) ) );
+                            $sbval = trim( (string) ( $sbit['value'] ?? '' ) );
+                            if ( $sblbl === '' || $sbval === '' ) continue;
+                            if ( $sb_lang === '' && ( strpos( $sblbl, 'language' ) !== false || strpos( $sblbl, 'languages' ) !== false || strpos( $sblbl, 'لغة' ) !== false ) ) $sb_lang = $sbval;
+                            if ( $sb_pickup === '' && ( strpos( $sblbl, 'pickup' ) !== false || strpos( $sblbl, 'meeting' ) !== false || strpos( $sblbl, 'start' ) !== false || strpos( $sblbl, 'استلام' ) !== false ) ) $sb_pickup = $sbval;
+                        }
+                    }
+
+                    if ( $sb_lang !== '' ) {
+                        $sb_items[] = array(
+                            'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>',
+                            'text' => __( 'Live tour guide', 'fts' ) . ' — ' . $sb_lang,
+                        );
+                    }
+
+                    if ( $sb_pickup !== '' ) {
+                        $sb_items[] = array(
+                            'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10l-2-4H7L5 10l-2.5 1.1C1.7 11.3 1 12.1 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 10h14"/></svg>',
+                            'text' => __( 'Pickup included', 'fts' ),
+                        );
+                    }
+
+                    $sb_ci = is_array( $cost_includes ?? '' ) ? implode( "\n", $cost_includes ) : (string) ( $cost_includes ?? '' );
+                    $sb_ci_lc = strtolower( $sb_ci );
+                    $sb_meal_title = '';
+                    if ( strpos( $sb_ci_lc, 'lunch' ) !== false && strpos( $sb_ci_lc, 'breakfast' ) !== false ) {
+                        $sb_meal_title = __( 'Breakfast & Lunch included', 'fts' );
+                    } elseif ( strpos( $sb_ci_lc, 'lunch' ) !== false ) {
+                        $sb_meal_title = __( 'Lunch included', 'fts' );
+                    } elseif ( strpos( $sb_ci_lc, 'breakfast' ) !== false ) {
+                        $sb_meal_title = __( 'Breakfast included', 'fts' );
+                    } elseif ( strpos( $sb_ci_lc, 'meal' ) !== false ) {
+                        $sb_meal_title = __( 'Meals included', 'fts' );
+                    }
+                    if ( $sb_meal_title !== '' ) {
+                        $sb_items[] = array(
+                            'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>',
+                            'text' => $sb_meal_title,
+                        );
+                    }
                 }
             ?>
             <?php if ( ! empty( $sb_items ) ) : ?>
@@ -194,7 +297,19 @@ $wa_digits = preg_replace( '/\D+/', '', $wa_raw );
 
             <!-- 7. CTA Button -->
             <div class="fts-v2-booking-cta">
-                <button type="button" class="fts-v2-check-btn fts-bm-trigger"><?php echo esc_html__( 'Check availability', 'fts' ); ?></button>
+                <?php if ( $fts_cta_badge !== '' ) : ?>
+                <div class="fts-v2-booking-save-badge"><?php echo esc_html( $fts_cta_badge ); ?></div>
+                <?php endif; ?>
+                <?php if ( $fts_cta_headline !== '' ) : ?>
+                <div class="fts-v2-booking-micro-title"><?php echo esc_html( $fts_cta_headline ); ?></div>
+                <?php endif; ?>
+                <?php if ( $fts_cta_subheadline !== '' ) : ?>
+                <div class="fts-v2-booking-per-person"><?php echo esc_html( $fts_cta_subheadline ); ?></div>
+                <?php endif; ?>
+                <?php if ( $fts_cta_urgency !== '' ) : ?>
+                <div class="fts-v2-booking-save-badge"><?php echo esc_html( $fts_cta_urgency ); ?></div>
+                <?php endif; ?>
+                <button type="button" class="fts-v2-check-btn fts-bm-trigger"><?php echo esc_html( $fts_cta_primary_button_text ); ?></button>
             </div>
 
             <!-- 8. Book with Confidence (WhatsApp + Duration only) -->
@@ -216,7 +331,7 @@ $wa_digits = preg_replace( '/\D+/', '', $wa_raw );
                 <div class="fts-v2-booking-micro-item">
                     <i class="fa fa-whatsapp"></i>
                     <a class="fts-v2-booking-micro-link" href="<?php echo esc_url( 'https://wa.me/' . $wa_digits ); ?>" target="_blank" rel="noopener noreferrer nofollow" data-fts-wa-source="sidebar_micro">
-                        <?php echo esc_html__( 'Support via WhatsApp', 'fts' ); ?>
+                        <?php echo esc_html( $fts_cta_secondary_button_text ); ?>
                     </a>
                 </div>
                 <?php endif; ?>
