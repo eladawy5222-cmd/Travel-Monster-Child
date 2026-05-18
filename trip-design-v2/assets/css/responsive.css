@@ -52,20 +52,25 @@
 .fts-v2-packages-grid .fts-v2-package-card {
     min-width: 0 !important;
     overflow: hidden !important;
-    padding-top: 42px !important;
+    padding-top: 36px !important;
 }
 
 .fts-v2-packages-grid .fts-v2-package-badge {
-    position: static !important;
-    top: auto !important;
-    left: auto !important;
+    position: absolute !important;
+    top: -1px !important;
+    left: 50% !important;
     right: auto !important;
-    transform: none !important;
-    align-self: flex-start !important;
-    max-width: 100% !important;
-    margin: 0 8px 8px 0 !important;
+    transform: translate(-50%, -50%) !important;
+    max-width: calc(100% - 28px) !important;
+    margin: 0 !important;
     white-space: normal !important;
     text-align: center !important;
+}
+
+.fts-v2-packages-grid .fts-v2-package-card > .fts-v2-package-badge:nth-of-type(2) {
+    left: auto !important;
+    right: 12px !important;
+    transform: translate(0, -50%) !important;
 }
 
 .fts-v2-packages-grid .fts-v2-package-name,
@@ -343,11 +348,11 @@
     .fts-v2-pkg-current { font-size: 20px !important; }
 
     .fts-v2-package-select-btn { font-size: 12px !important; padding: 10px !important; }
-    .fts-v2-packages-grid .fts-v2-package-card { padding-top: 20px !important; }
+    .fts-v2-packages-grid .fts-v2-package-card { padding-top: 28px !important; }
     .fts-v2-packages-grid .fts-v2-package-badge {
         font-size: 11px !important;
         padding: 4px 12px !important;
-        margin: 0 6px 6px 0 !important;
+        max-width: calc(100% - 20px) !important;
     }
 
 
@@ -505,7 +510,7 @@
     .fts-v2-booking-card .fts-v2-booking-trust-item { font-size: 10px !important; }
     .fts-v2-packages-grid .fts-v2-package-desc { font-size: 12px !important; }
     .fts-v2-packages-grid .fts-v2-package-features li { font-size: 11px !important; }
-    .fts-v2-packages-grid .fts-v2-package-badge { max-width: calc(100% - 6px) !important; }
+    .fts-v2-packages-grid .fts-v2-package-badge { max-width: calc(100% - 16px) !important; }
 
     .fts-v2-price-current { font-size: 18px !important; }
 
