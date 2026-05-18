@@ -99,6 +99,106 @@ class FTS_Trip_Redesign_V2 {
         }
     }
 
+    private static function read_frontend_view_model( $trip_id, $settings ) {
+        $sources = array();
+
+        if ( is_array( $settings ) ) {
+            if ( array_key_exists( 'frontend_view_model', $settings ) ) {
+                $sources[] = $settings['frontend_view_model'];
+            }
+            if ( array_key_exists( 'ai_frontend_view_model', $settings ) ) {
+                $sources[] = $settings['ai_frontend_view_model'];
+            }
+        }
+
+        $sources[] = get_post_meta( $trip_id, 'fts_frontend_view_model', true );
+        $sources[] = get_post_meta( $trip_id, 'ai_frontend_view_model', true );
+        $sources[] = get_post_meta( $trip_id, 'AI_Frontend_View_Model', true );
+
+        foreach ( $sources as $raw_vm ) {
+            if ( is_array( $raw_vm ) ) {
+                if ( ! empty( $raw_vm ) ) {
+                    return $raw_vm;
+                }
+                continue;
+            }
+
+            if ( ! is_string( $raw_vm ) ) {
+                if ( empty( $raw_vm ) ) {
+                    continue;
+                }
+                return array();
+            }
+
+            $raw_vm = trim( $raw_vm );
+            if ( $raw_vm === '' ) {
+                continue;
+            }
+
+            $decoded = json_decode( $raw_vm, true );
+            if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
+                if ( ! empty( $decoded ) ) {
+                    return $decoded;
+                }
+                continue;
+            }
+
+            return array();
+        }
+
+        return array();
+    }
+
+    private static function vm_get( $vm, $path, $fallback = null ) {
+        if ( ! is_array( $vm ) ) {
+            return $fallback;
+        }
+
+        if ( is_array( $path ) ) {
+            $segments = $path;
+        } else {
+            $path = trim( (string) $path );
+            if ( $path === '' ) {
+                return $fallback;
+            }
+            $segments = explode( '.', $path );
+        }
+
+        $current = $vm;
+        foreach ( $segments as $segment ) {
+            $segment = is_string( $segment ) || is_numeric( $segment ) ? (string) $segment : '';
+            if ( $segment === '' || ! is_array( $current ) || ! array_key_exists( $segment, $current ) ) {
+                return $fallback;
+            }
+            $current = $current[ $segment ];
+        }
+
+        if ( is_array( $fallback ) && ! is_array( $current ) ) {
+            return $fallback;
+        }
+
+        return $current;
+    }
+
+    private static function vm_text( $vm, $path, $fallback = '' ) {
+        $value = self::vm_get( $vm, $path, $fallback );
+
+        if ( is_string( $value ) ) {
+            return trim( $value );
+        }
+
+        if ( is_scalar( $value ) ) {
+            return trim( (string) $value );
+        }
+
+        return (string) $fallback;
+    }
+
+    private static function vm_list( $vm, $path, $fallback = array() ) {
+        $value = self::vm_get( $vm, $path, $fallback );
+        return is_array( $value ) ? $value : ( is_array( $fallback ) ? $fallback : array() );
+    }
+
     private static function infer_traveler_role( $label, $term_id = 0 ) {
         $txt = strtolower( trim( (string) $label ) );
         if ( $txt !== '' ) {
@@ -276,6 +376,27 @@ class FTS_Trip_Redesign_V2 {
             $decoded = json_decode( $at_raw, true );
             if ( is_array( $decoded ) ) $at_a_glance = $decoded;
         }
+
+        $frontend_view_model     = self::read_frontend_view_model( $trip_id, $settings );
+        $has_frontend_view_model = ! empty( $frontend_view_model );
+        $use_frontend_view_model = (bool) apply_filters(
+            'fts_v2_use_frontend_view_model',
+            $has_frontend_view_model,
+            $trip_id,
+            $frontend_view_model
+        );
+
+        $vm_hero       = self::vm_get( $frontend_view_model, 'hero', array() );
+        $vm_trust      = self::vm_get( $frontend_view_model, 'trust', array() );
+        $vm_quick_info = self::vm_get( $frontend_view_model, 'quick_info', array() );
+        $vm_highlights = self::vm_list( $frontend_view_model, 'highlights', array() );
+        $vm_itinerary  = self::vm_list( $frontend_view_model, 'itinerary', array() );
+        $vm_packages   = self::vm_list( $frontend_view_model, 'packages', array() );
+        $vm_included   = self::vm_list( $frontend_view_model, 'included', array() );
+        $vm_excluded   = self::vm_list( $frontend_view_model, 'excluded', array() );
+        $vm_faq        = self::vm_list( $frontend_view_model, 'faq', array() );
+        $vm_images     = self::vm_list( $frontend_view_model, 'images', array() );
+        $vm_cta        = self::vm_get( $frontend_view_model, 'cta', array() );
 
         $trip_obj = null;
         if ( class_exists( '\WPTravelEngine\Core\Models\Post\Trip' ) ) {
@@ -1105,6 +1226,9 @@ class FTS_Trip_Redesign_V2 {
         self::$trip_data = compact(
             'trip_id', 'settings', 'trip_obj',
             'bold_promise', 'at_a_glance',
+            'frontend_view_model', 'has_frontend_view_model', 'use_frontend_view_model',
+            'vm_hero', 'vm_trust', 'vm_quick_info', 'vm_highlights', 'vm_itinerary',
+            'vm_packages', 'vm_included', 'vm_excluded', 'vm_faq', 'vm_images', 'vm_cta',
             'price', 'sale_price', 'has_sale', 'display_price', 'old_price', 'discount_pct',
             'review_data', 'avg_rating', 'review_count', 'reviews', 'reviews_tab_content',
             'duration', 'duration_unit', 'nights', 'duration_text',
@@ -1242,6 +1366,8 @@ class FTS_Trip_Redesign_V2 {
             'termsUrl'       => esc_url_raw( $data['terms_url'] ?? home_url( '/terms-and-conditions/' ) ),
             'packages'       => $packages_for_js,
             'bookingModal'   => $bm_raw,
+            'frontendViewModel'    => ! empty( $data['use_frontend_view_model'] ) ? ( $data['frontend_view_model'] ?? array() ) : array(),
+            'hasFrontendViewModel' => ! empty( $data['use_frontend_view_model'] ),
             'extraServices'  => $data['extra_services'],
             'decimalDigits'  => ( isset( $settings['decimal_digits'] ) && $settings['decimal_digits'] !== 'default' ) ? intval( $settings['decimal_digits'] ) : 0,
             'checkoutUrl'    => $data['checkout_url'],
