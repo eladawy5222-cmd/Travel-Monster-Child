@@ -11,9 +11,18 @@ if ( false ) {
         return $text;
     }
 
+    function apply_filters( $hook_name, $value ) {
+        return $value;
+    }
+
+    function do_shortcode( $content, $ignore_html = false ) {
+        return $content;
+    }
+
     function _n( $single, $plural, $number, $domain = 'default' ) {
         return $number === 1 ? $single : $plural;
     }
+
 
     function esc_attr( $text ) {
         return $text;

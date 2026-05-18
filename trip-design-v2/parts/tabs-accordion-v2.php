@@ -4,12 +4,245 @@
  * Variables provided by layout-controller.php via extract()
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
+
+if ( ! function_exists( 'fts_v2_vm_text_value' ) ) {
+    function fts_v2_vm_text_value( $item, $keys = array() ) {
+        if ( is_scalar( $item ) ) {
+            $text = trim( wp_strip_all_tags( (string) $item ) );
+            return $text !== '' ? $text : '';
+        }
+
+        if ( ! is_array( $item ) ) {
+            return '';
+        }
+
+        foreach ( (array) $keys as $key ) {
+            if ( isset( $item[ $key ] ) && is_scalar( $item[ $key ] ) ) {
+                $text = trim( wp_strip_all_tags( (string) $item[ $key ] ) );
+                if ( $text !== '' ) {
+                    return $text;
+                }
+            }
+        }
+
+        return '';
+    }
+}
+
+if ( ! function_exists( 'fts_v2_vm_list_texts' ) ) {
+    function fts_v2_vm_list_texts( $items ) {
+        $texts = array();
+
+        if ( ! is_array( $items ) ) {
+            return $texts;
+        }
+
+        foreach ( $items as $item ) {
+            $text = fts_v2_vm_text_value( $item, array( 'text', 'label', 'title', 'value' ) );
+            if ( $text !== '' ) {
+                $texts[] = $text;
+            }
+        }
+
+        return $texts;
+    }
+}
+
+if ( ! function_exists( 'fts_v2_vm_faq_items' ) ) {
+    function fts_v2_vm_faq_items( $items ) {
+        $faq_items = array();
+
+        if ( ! is_array( $items ) ) {
+            return $faq_items;
+        }
+
+        foreach ( $items as $item ) {
+            if ( ! is_array( $item ) ) {
+                continue;
+            }
+
+            $question = fts_v2_vm_text_value( $item, array( 'question', 'title', 'q' ) );
+            if ( $question === '' ) {
+                continue;
+            }
+
+            $answer = '';
+            foreach ( array( 'answer', 'content', 'a' ) as $key ) {
+                if ( isset( $item[ $key ] ) && is_scalar( $item[ $key ] ) ) {
+                    $answer = trim( (string) $item[ $key ] );
+                    if ( $answer !== '' ) {
+                        break;
+                    }
+                }
+            }
+
+            $faq_items[] = array(
+                'question' => $question,
+                'answer'   => $answer,
+            );
+        }
+
+        return $faq_items;
+    }
+}
+
+if ( ! function_exists( 'fts_v2_vm_itinerary_items' ) ) {
+    function fts_v2_vm_itinerary_items( $items ) {
+        $itinerary_items = array();
+
+        if ( ! is_array( $items ) ) {
+            return $itinerary_items;
+        }
+
+        foreach ( $items as $item ) {
+            if ( is_scalar( $item ) ) {
+                $title = trim( wp_strip_all_tags( (string) $item ) );
+                if ( $title !== '' ) {
+                    $itinerary_items[] = array(
+                        'title'   => $title,
+                        'label'   => '',
+                        'content' => '',
+                    );
+                }
+                continue;
+            }
+
+            if ( ! is_array( $item ) ) {
+                continue;
+            }
+
+            $title = fts_v2_vm_text_value( $item, array( 'title', 'heading', 'label', 'day', 'text', 'description', 'content' ) );
+            if ( $title === '' ) {
+                continue;
+            }
+
+            $label = fts_v2_vm_text_value( $item, array( 'day', 'label' ) );
+            $content = '';
+            foreach ( array( 'content', 'description', 'text' ) as $key ) {
+                if ( isset( $item[ $key ] ) && is_scalar( $item[ $key ] ) ) {
+                    $content = trim( (string) $item[ $key ] );
+                    if ( $content !== '' ) {
+                        break;
+                    }
+                }
+            }
+
+            $itinerary_items[] = array(
+                'title'   => $title,
+                'label'   => $label,
+                'content' => $content,
+            );
+        }
+
+        return $itinerary_items;
+    }
+}
+
+$fts_v2_use_vm = ! empty( $use_frontend_view_model );
+
+$fts_v2_highlight_items = array();
+if ( $fts_v2_use_vm && ! empty( $vm_highlights ) && is_array( $vm_highlights ) ) {
+    $fts_v2_highlight_items = fts_v2_vm_list_texts( $vm_highlights );
+}
+if ( empty( $fts_v2_highlight_items ) && ! empty( $highlights ) && is_array( $highlights ) ) {
+    foreach ( $highlights as $highlight_item ) {
+        $highlight_text = is_scalar( $highlight_item ) ? trim( (string) $highlight_item ) : '';
+        if ( $highlight_text !== '' ) {
+            $fts_v2_highlight_items[] = $highlight_text;
+        }
+    }
+}
+$fts_v2_has_highlights = ! empty( $fts_v2_highlight_items );
+
+$fts_v2_itinerary_items = array();
+if ( $fts_v2_use_vm && ! empty( $vm_itinerary ) && is_array( $vm_itinerary ) ) {
+    $fts_v2_itinerary_items = fts_v2_vm_itinerary_items( $vm_itinerary );
+}
+if ( empty( $fts_v2_itinerary_items ) && ! empty( $itin_titles ) && is_array( $itin_titles ) ) {
+    foreach ( $itin_titles as $key => $title ) {
+        $title = is_scalar( $title ) ? trim( (string) $title ) : '';
+        if ( $title === '' ) {
+            continue;
+        }
+
+        $fts_v2_itinerary_items[] = array(
+            'title'   => $title,
+            'label'   => isset( $itin_days_label[ $key ] ) && is_scalar( $itin_days_label[ $key ] ) ? trim( (string) $itin_days_label[ $key ] ) : '',
+            'content' => isset( $itin_content[ $key ] ) && is_scalar( $itin_content[ $key ] ) ? (string) $itin_content[ $key ] : '',
+        );
+    }
+}
+$fts_v2_has_itinerary = ! empty( $fts_v2_itinerary_items );
+
+$fts_v2_legacy_included_raw = '';
+if ( isset( $cost_includes ) ) {
+    if ( is_array( $cost_includes ) ) {
+        $fts_v2_legacy_included_raw = implode( "\n", array_filter( array_map( 'strval', $cost_includes ), 'strlen' ) );
+    } elseif ( is_scalar( $cost_includes ) ) {
+        $fts_v2_legacy_included_raw = (string) $cost_includes;
+    }
+}
+
+$fts_v2_included_items = array();
+if ( $fts_v2_use_vm && ! empty( $vm_included ) && is_array( $vm_included ) ) {
+    $fts_v2_included_items = fts_v2_vm_list_texts( $vm_included );
+}
+if ( empty( $fts_v2_included_items ) && trim( $fts_v2_legacy_included_raw ) !== '' ) {
+    foreach ( preg_split( '/\r\n|[\r\n]/', $fts_v2_legacy_included_raw ) as $included_item ) {
+        $included_item = trim( (string) $included_item );
+        if ( $included_item !== '' ) {
+            $fts_v2_included_items[] = $included_item;
+        }
+    }
+}
+
+$fts_v2_legacy_excluded_raw = '';
+if ( isset( $cost_excludes ) ) {
+    if ( is_array( $cost_excludes ) ) {
+        $fts_v2_legacy_excluded_raw = implode( "\n", array_filter( array_map( 'strval', $cost_excludes ), 'strlen' ) );
+    } elseif ( is_scalar( $cost_excludes ) ) {
+        $fts_v2_legacy_excluded_raw = (string) $cost_excludes;
+    }
+}
+
+$fts_v2_excluded_items = array();
+if ( $fts_v2_use_vm && ! empty( $vm_excluded ) && is_array( $vm_excluded ) ) {
+    $fts_v2_excluded_items = fts_v2_vm_list_texts( $vm_excluded );
+}
+if ( empty( $fts_v2_excluded_items ) && trim( $fts_v2_legacy_excluded_raw ) !== '' ) {
+    foreach ( preg_split( '/\r\n|[\r\n]/', $fts_v2_legacy_excluded_raw ) as $excluded_item ) {
+        $excluded_item = trim( (string) $excluded_item );
+        if ( $excluded_item !== '' ) {
+            $fts_v2_excluded_items[] = $excluded_item;
+        }
+    }
+}
+$fts_v2_has_cost_content = ! empty( $fts_v2_included_items ) || ! empty( $fts_v2_excluded_items );
+
+$fts_v2_faq_items = array();
+if ( $fts_v2_use_vm && ! empty( $vm_faq ) && is_array( $vm_faq ) ) {
+    $fts_v2_faq_items = fts_v2_vm_faq_items( $vm_faq );
+}
+if ( empty( $fts_v2_faq_items ) && ! empty( $faq_titles ) && is_array( $faq_titles ) ) {
+    foreach ( $faq_titles as $key => $faq_title ) {
+        $faq_title = is_scalar( $faq_title ) ? trim( (string) $faq_title ) : '';
+        if ( $faq_title === '' ) {
+            continue;
+        }
+
+        $fts_v2_faq_items[] = array(
+            'question' => $faq_title,
+            'answer'   => isset( $faq_content[ $key ] ) && is_scalar( $faq_content[ $key ] ) ? (string) $faq_content[ $key ] : '',
+        );
+    }
+}
+$fts_v2_has_faq_items = ! empty( $fts_v2_faq_items );
 ?>
 
 <div class="fts-v2-content-sections fts-v2-accordion" data-single-open="true">
 
     <!-- ==================== ITINERARY ==================== -->
-    <?php if ( $has_itinerary ) : ?>
+    <?php if ( $fts_v2_has_itinerary ) : ?>
     <?php
         $gyg_icons = array(
             'pickup'   => '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.4 7.05 11.5 7.35 11.76a1 1 0 0 0 1.3 0C13 21.5 20 15.4 20 10a8 8 0 0 0-8-8z"/></svg>',
@@ -34,8 +267,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         }
         endif;
 
-        $total_items = 0;
-        foreach ( $itin_titles as $__t ) { if ( ! empty( $__t ) ) $total_items++; }
+        $total_items = count( $fts_v2_itinerary_items );
     ?>
     <section id="fts-v2-sec-itinerary" class="fts-v2-section fts-v2-accordion-item is-open">
         <div class="fts-v2-accordion-header">
@@ -44,10 +276,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         </div>
         <div class="fts-v2-accordion-body">
             <div class="fts-v2-itinerary-timeline fts-v2-gyg-timeline">
-                <?php $stop_num = 0; foreach ( $itin_titles as $key => $title ) : if ( empty( $title ) ) continue; $stop_num++;
+                <?php $stop_num = 0; foreach ( $fts_v2_itinerary_items as $item ) : $title = $item['title'] ?? ''; if ( empty( $title ) ) continue; $stop_num++;
                     $is_first  = ( $stop_num === 1 );
                     $is_last   = ( $stop_num === $total_items );
-                    $desc_raw  = $itin_content[ $key ] ?? '';
+                    $desc_raw  = $item['content'] ?? '';
                     $has_desc  = ! empty( trim( wp_strip_all_tags( $desc_raw ) ) );
                     $stop_type = fts_v2_detect_stop_type( $title, $desc_raw, $is_first, $is_last, $total_items );
                     $icon_svg  = $gyg_icons[ $stop_type ] ?? $gyg_icons['visit'];
@@ -57,7 +289,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     if ( $is_last ) $item_classes[] = 'fts-v2-tl-last';
                     if ( $is_first && $has_desc ) $item_classes[] = 'active';
 
-                    $label = $itin_days_label[ $key ] ?? '';
+                    $label = $item['label'] ?? '';
                 ?>
                 <div class="<?php echo esc_attr( implode( ' ', $item_classes ) ); ?>">
                     <div class="fts-v2-tl-rail">
@@ -105,7 +337,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <?php endif; ?>
 
     <!-- ==================== TRIP HIGHLIGHTS ==================== -->
-    <?php if ( ! empty( $highlights ) ) :
+    <?php if ( $fts_v2_has_highlights ) :
         $hl_icon_map = array(
             array( 'keys' => array( 'flight', 'fly', 'plane', 'air', 'domestic' ), 'icon' => 'fa-plane',      'color' => '#e67e22' ),
             array( 'keys' => array( 'pyramid', 'giza', 'sphinx', 'ancient' ),      'icon' => 'fa-university', 'color' => '#2c3e50' ),
@@ -138,7 +370,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <div class="fts-v2-accordion-body">
             <div class="fts-v2-highlights">
                 <div class="fts-v2-highlights-grid">
-                    <?php foreach ( $highlights as $h ) : if ( empty( $h ) ) continue;
+                    <?php foreach ( $fts_v2_highlight_items as $h ) : if ( empty( $h ) ) continue;
                         $lower = strtolower( $h );
                         $matched_icon  = null;
                         $matched_color = null;
@@ -170,7 +402,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <?php endif; ?>
 
     <!-- ==================== INCLUDES / EXCLUDES ==================== -->
-    <?php if ( $has_cost ) : ?>
+    <?php if ( $fts_v2_has_cost_content ) : ?>
     <section id="fts-v2-sec-includes" class="fts-v2-section fts-v2-accordion-item">
         <div class="fts-v2-accordion-header">
             <h2 class="fts-v2-section-title"><?php echo esc_html__( "What's Included", 'fts' ); ?></h2>
@@ -178,26 +410,22 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         </div>
         <div class="fts-v2-accordion-body">
             <div class="fts-v2-includes-grid">
-                <?php if ( ! empty( trim( $cost_includes ) ) ) :
-                    $inc_list = preg_split( '/\r\n|[\r\n]/', $cost_includes );
-                ?>
+                <?php if ( ! empty( $fts_v2_included_items ) ) : ?>
                 <div class="fts-v2-includes-col fts-v2-col-included">
                     <h3><i class="fa fa-check-circle"></i> <?php echo esc_html__( 'Included', 'fts' ); ?></h3>
                     <ul>
-                        <?php foreach ( $inc_list as $item ) : if ( empty( trim( $item ) ) ) continue; ?>
+                        <?php foreach ( $fts_v2_included_items as $item ) : if ( empty( trim( $item ) ) ) continue; ?>
                         <li><i class="fa fa-check"></i> <?php echo esc_html( $item ); ?></li>
                         <?php endforeach; ?>
                     </ul>
                 </div>
                 <?php endif; ?>
 
-                <?php if ( ! empty( trim( $cost_excludes ) ) ) :
-                    $exc_list = preg_split( '/\r\n|[\r\n]/', $cost_excludes );
-                ?>
+                <?php if ( ! empty( $fts_v2_excluded_items ) ) : ?>
                 <div class="fts-v2-includes-col fts-v2-col-excluded">
                     <h3><i class="fa fa-times-circle"></i> <?php echo esc_html__( 'Not Included', 'fts' ); ?></h3>
                     <ul>
-                        <?php foreach ( $exc_list as $item ) : if ( empty( trim( $item ) ) ) continue; ?>
+                        <?php foreach ( $fts_v2_excluded_items as $item ) : if ( empty( trim( $item ) ) ) continue; ?>
                         <li><i class="fa fa-times"></i> <?php echo esc_html( $item ); ?></li>
                         <?php endforeach; ?>
                     </ul>
@@ -715,7 +943,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <?php endif; ?>
 
     <!-- ==================== FAQ ==================== -->
-    <?php if ( $has_faq ) : ?>
+    <?php if ( $fts_v2_has_faq_items ) : ?>
     <section id="fts-v2-sec-faq" class="fts-v2-section fts-v2-accordion-item">
         <div class="fts-v2-accordion-header">
             <h2 class="fts-v2-section-title"><?php echo esc_html__( 'Frequently Asked Questions', 'fts' ); ?></h2>
@@ -723,15 +951,15 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         </div>
         <div class="fts-v2-accordion-body">
             <div class="fts-v2-faq-list">
-                <?php foreach ( $faq_titles as $key => $faq_title ) : if ( empty( $faq_title ) ) continue; ?>
+                <?php foreach ( $fts_v2_faq_items as $faq_item ) : $faq_title = $faq_item['question'] ?? ''; if ( empty( $faq_title ) ) continue; ?>
                 <div class="fts-v2-faq-item">
                     <div class="fts-v2-faq-question">
                         <span><?php echo esc_html( $faq_title ); ?></span>
                         <i class="fa fa-chevron-down"></i>
                     </div>
-                    <?php if ( ! empty( $faq_content[ $key ] ) ) : ?>
+                    <?php if ( ! empty( $faq_item['answer'] ) ) : ?>
                     <div class="fts-v2-faq-answer">
-                        <?php echo wp_kses_post( $faq_content[ $key ] ); ?>
+                        <?php echo wp_kses_post( $faq_item['answer'] ); ?>
                     </div>
                     <?php endif; ?>
                 </div>
