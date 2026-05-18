@@ -143,7 +143,7 @@ class FTS_Trip_Redesign_V2 {
                 continue;
             }
 
-            return array();
+            continue;
         }
 
         return array();
@@ -395,7 +395,7 @@ class FTS_Trip_Redesign_V2 {
         $vm_included   = self::vm_list( $frontend_view_model, 'included', array() );
         $vm_excluded   = self::vm_list( $frontend_view_model, 'excluded', array() );
         $vm_faq        = self::vm_list( $frontend_view_model, 'faq', array() );
-        $vm_images     = self::vm_list( $frontend_view_model, 'images', array() );
+        $vm_images     = self::vm_get( $frontend_view_model, 'images', array() );
         $vm_cta        = self::vm_get( $frontend_view_model, 'cta', array() );
 
         $trip_obj = null;
