@@ -1,0 +1,19 @@
+/* ============================================================================
+   FTS V2 - Main Layout (Two-Column)
+   ============================================================================ */
+.fts-v2-main-layout {
+    display: flex !important;
+    gap: 15px !important;
+    padding-top: 50px !important;
+    padding-bottom: 80px !important;
+    align-items: stretch !important;
+}
+.fts-v2-content-col {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+.fts-v2-sidebar-col {
+    width: 380px !important;
+    flex-shrink: 0 !important;
+    overflow: visible !important;
+}
