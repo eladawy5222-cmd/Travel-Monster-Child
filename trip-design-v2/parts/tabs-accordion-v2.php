@@ -179,6 +179,117 @@ if ( ! function_exists( 'fts_v2_legacy_cost_items' ) ) {
             }
         }
 
+if ( ! function_exists( 'fts_v2_normalize_package_key' ) ) {
+    function fts_v2_normalize_package_key( $value ) {
+        if ( ! is_scalar( $value ) ) {
+            return '';
+        }
+
+        $text = trim( wp_strip_all_tags( (string) $value ) );
+        if ( $text === '' ) {
+            return '';
+        }
+
+        $text = strtolower( $text );
+        $text = preg_replace( '/[^a-z0-9]+/i', ' ', $text );
+        $text = trim( preg_replace( '/\s+/', ' ', (string) $text ) );
+
+        return $text;
+    }
+}
+
+if ( ! function_exists( 'fts_v2_vm_package_text' ) ) {
+    function fts_v2_vm_package_text( $package, $keys ) {
+        if ( ! is_array( $package ) ) {
+            return '';
+        }
+
+        foreach ( (array) $keys as $key ) {
+            if ( isset( $package[ $key ] ) && is_scalar( $package[ $key ] ) ) {
+                $text = trim( wp_strip_all_tags( (string) $package[ $key ] ) );
+                if ( $text !== '' ) {
+                    return $text;
+                }
+            }
+        }
+
+        return '';
+    }
+}
+
+if ( ! function_exists( 'fts_v2_vm_package_list' ) ) {
+    function fts_v2_vm_package_list( $package, $keys ) {
+        if ( ! is_array( $package ) ) {
+            return array();
+        }
+
+        foreach ( (array) $keys as $key ) {
+            if ( ! array_key_exists( $key, $package ) ) {
+                continue;
+            }
+
+            if ( is_array( $package[ $key ] ) ) {
+                $items = fts_v2_vm_list_texts( $package[ $key ] );
+                if ( ! empty( $items ) ) {
+                    return $items;
+                }
+            } elseif ( is_scalar( $package[ $key ] ) ) {
+                $text = trim( wp_strip_all_tags( (string) $package[ $key ] ) );
+                if ( $text !== '' ) {
+                    return array( $text );
+                }
+            }
+        }
+
+        return array();
+    }
+}
+
+if ( ! function_exists( 'fts_v2_match_vm_package' ) ) {
+    function fts_v2_match_vm_package( $pkg, $vm_packages, $index ) {
+        if ( ! is_array( $pkg ) || ! is_array( $vm_packages ) || empty( $vm_packages ) ) {
+            return array();
+        }
+
+        $pkg_id = isset( $pkg['id'] ) ? intval( $pkg['id'] ) : 0;
+        if ( $pkg_id > 0 ) {
+            foreach ( $vm_packages as $vm_package ) {
+                if ( ! is_array( $vm_package ) ) {
+                    continue;
+                }
+                if ( isset( $vm_package['id'] ) && intval( $vm_package['id'] ) === $pkg_id ) {
+                    return $vm_package;
+                }
+            }
+        }
+
+        $pkg_key = '';
+        if ( isset( $pkg['name'] ) && is_scalar( $pkg['name'] ) ) {
+            $pkg_key = fts_v2_normalize_package_key( $pkg['name'] );
+        }
+        if ( $pkg_key !== '' ) {
+            foreach ( $vm_packages as $vm_package ) {
+                if ( ! is_array( $vm_package ) ) {
+                    continue;
+                }
+                $vm_key = fts_v2_vm_package_text( $vm_package, array( 'name', 'title' ) );
+                $vm_key = fts_v2_normalize_package_key( $vm_key );
+                if ( $vm_key !== '' && $vm_key === $pkg_key ) {
+                    return $vm_package;
+                }
+            }
+        }
+
+        if ( isset( $vm_packages[ $index ] ) && is_array( $vm_packages[ $index ] ) ) {
+            return $vm_packages[ $index ];
+        }
+
+        return array();
+    }
+}
+
+$fts_v2_vm_packages = ( ! empty( $use_frontend_view_model ) && ! empty( $vm_packages ) && is_array( $vm_packages ) ) ? $vm_packages : array();
+
         foreach ( preg_split( '/\r\n|[\r\n]/', $raw_string ) as $line ) {
             $text = trim( wp_strip_all_tags( (string) $line ) );
             if ( $text !== '' ) {
@@ -610,19 +721,62 @@ $fts_v2_has_faq_items = ! empty( $fts_v2_faq_items );
                 }
             ?>
             <div class="fts-v2-packages-grid">
-                <?php foreach ( $packages_list as $pkg ) :
+                <?php foreach ( $packages_list as $pkg_index => $pkg ) :
                     $card_cls = 'fts-v2-package-card';
                     if ( $pkg['badge'] === 'most_popular' ) $card_cls .= ' fts-v2-package-popular';
                     if ( $pkg['badge'] === 'best_value' )   $card_cls .= ' fts-v2-package-best-value';
                     $pkg_dp = floatval( $pkg['display_price'] ?? 0 );
                     $is_lowest = ( $pkg_min_price !== null && $pkg_dp > 0 && ( $pkg_dp - floatval( $pkg_min_price ) ) <= 0.01 );
                     if ( $is_lowest ) $card_cls .= ' fts-v2-package-lowest';
+
+                    $pkg_vm_match = ! empty( $fts_v2_vm_packages ) ? fts_v2_match_vm_package( $pkg, $fts_v2_vm_packages, $pkg_index ) : array();
+
+                    $pkg_display_badge = fts_v2_vm_package_text( $pkg_vm_match, array( 'badge' ) );
+                    if ( $pkg_display_badge === '' ) {
+                        if ( $pkg['badge'] === 'most_popular' ) {
+                            $pkg_display_badge = esc_html__( 'Most Popular', 'fts' );
+                        } elseif ( $pkg['badge'] === 'best_value' ) {
+                            $pkg_display_badge = esc_html__( 'Best Value', 'fts' );
+                        }
+                    }
+
+                    $pkg_vm_short_description = fts_v2_vm_package_text( $pkg_vm_match, array( 'short_description' ) );
+                    $pkg_vm_long_description  = fts_v2_vm_package_text( $pkg_vm_match, array( 'description' ) );
+                    $pkg_display_description  = '';
+                    if ( $pkg_vm_short_description !== '' ) {
+                        $pkg_display_description = $pkg_vm_short_description;
+                    } elseif ( $pkg_vm_long_description !== '' ) {
+                        $pkg_display_description = $pkg_vm_long_description;
+                    } elseif ( ! empty( $pkg['description_full'] ) ) {
+                        $pkg_display_description = (string) $pkg['description_full'];
+                    } elseif ( ! empty( $pkg['description'] ) ) {
+                        $pkg_display_description = (string) $pkg['description'];
+                    }
+
+                    $pkg_display_description_short = $pkg_display_description;
+                    $pkg_display_description_full  = $pkg_display_description;
+                    if ( $pkg_vm_short_description !== '' && $pkg_vm_long_description !== '' ) {
+                        $pkg_display_description_short = $pkg_vm_short_description;
+                        $pkg_display_description_full  = $pkg_vm_long_description;
+                    } elseif ( $pkg_vm_short_description === '' && $pkg_vm_long_description === '' ) {
+                        $pkg_display_description_short = ! empty( $pkg['description'] ) ? (string) $pkg['description'] : $pkg_display_description;
+                        $pkg_display_description_full  = ! empty( $pkg['description_full'] ) ? (string) $pkg['description_full'] : $pkg_display_description_short;
+                    }
+
+                    $pkg_display_best_for = fts_v2_vm_package_text( $pkg_vm_match, array( 'best_for' ) );
+
+                    $pkg_display_features = fts_v2_vm_package_list( $pkg_vm_match, array( 'features', 'includes' ) );
+                    if ( empty( $pkg_display_features ) ) {
+                        $pkg_display_features = ! empty( $pkg['features_all'] ) ? (array) $pkg['features_all'] : ( ! empty( $pkg['features'] ) ? (array) $pkg['features'] : array() );
+                    }
                 ?>
                 <div class="<?php echo esc_attr( $card_cls ); ?>">
                     <?php if ( $pkg['badge'] === 'most_popular' ) : ?>
-                    <div class="fts-v2-package-badge fts-v2-badge-popular"><span>&#9733;</span> <?php echo esc_html__( 'Most Popular', 'fts' ); ?></div>
+                    <div class="fts-v2-package-badge fts-v2-badge-popular"><span>&#9733;</span> <?php echo esc_html( $pkg_display_badge ); ?></div>
                     <?php elseif ( $pkg['badge'] === 'best_value' ) : ?>
-                    <div class="fts-v2-package-badge fts-v2-badge-value"><span>&#9889;</span> <?php echo esc_html__( 'Best Value', 'fts' ); ?></div>
+                    <div class="fts-v2-package-badge fts-v2-badge-value"><span>&#9889;</span> <?php echo esc_html( $pkg_display_badge ); ?></div>
+                    <?php elseif ( $pkg_display_badge !== '' ) : ?>
+                    <div class="fts-v2-package-badge"><?php echo esc_html( $pkg_display_badge ); ?></div>
                     <?php endif; ?>
                     <?php if ( $is_lowest ) :
                         $lowest_alt = ( $pkg['badge'] === 'most_popular' || $pkg['badge'] === 'best_value' ) ? ' fts-v2-badge-alt' : '';
@@ -631,9 +785,12 @@ $fts_v2_has_faq_items = ! empty( $fts_v2_faq_items );
                     <?php endif; ?>
 
                     <h3 class="fts-v2-package-name"><?php echo esc_html( $pkg['name'] ); ?></h3>
+                    <?php if ( $pkg_display_best_for !== '' ) : ?>
+                    <p class="fts-v2-package-desc"><?php echo esc_html( sprintf( __( 'Best for: %s', 'fts' ), $pkg_display_best_for ) ); ?></p>
+                    <?php endif; ?>
                     <?php
-                        $short_desc = ! empty( $pkg['description'] ) ? $pkg['description'] : '';
-                        $full_desc  = ! empty( $pkg['description_full'] ) ? $pkg['description_full'] : $short_desc;
+                        $short_desc = is_string( $pkg_display_description_short ) ? $pkg_display_description_short : '';
+                        $full_desc  = is_string( $pkg_display_description_full ) ? $pkg_display_description_full : '';
                         $has_more_desc = ( $full_desc !== '' && $full_desc !== $short_desc && $short_desc !== '' );
                     ?>
                     <?php if ( $full_desc !== '' ) : ?>
@@ -672,12 +829,10 @@ $fts_v2_has_faq_items = ! empty( $fts_v2_faq_items );
                         <?php endif; ?>
                     <?php endif; ?>
 
-                    <?php
-                        $all_feats = ! empty( $pkg['features_all'] ) ? $pkg['features_all'] : ( ! empty( $pkg['features'] ) ? $pkg['features'] : array() );
-                    ?>
-                    <?php if ( ! empty( $all_feats ) ) : ?>
+                    <?php if ( ! empty( $pkg_display_features ) ) : ?>
                     <ul class="fts-v2-package-features">
-                        <?php foreach ( $all_feats as $feat ) : ?>
+                        <?php foreach ( $pkg_display_features as $feat ) : ?>
+                        <?php $feat = is_scalar( $feat ) ? trim( (string) $feat ) : ''; if ( $feat === '' ) continue; ?>
                         <li>
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38a169" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                             <?php echo esc_html( $feat ); ?>
