@@ -89,6 +89,7 @@ if ( ! function_exists( 'fts_v2_vm_faq_items' ) ) {
 if ( ! function_exists( 'fts_v2_vm_itinerary_items' ) ) {
     function fts_v2_vm_itinerary_items( $items ) {
         $itinerary_items = array();
+        $fallback_index = 0;
 
         if ( ! is_array( $items ) ) {
             return $itinerary_items;
@@ -111,12 +112,6 @@ if ( ! function_exists( 'fts_v2_vm_itinerary_items' ) ) {
                 continue;
             }
 
-            $title = fts_v2_vm_text_value( $item, array( 'title', 'heading', 'label', 'day', 'text', 'description', 'content' ) );
-            if ( $title === '' ) {
-                continue;
-            }
-
-            $label = fts_v2_vm_text_value( $item, array( 'day', 'label' ) );
             $content = '';
             foreach ( array( 'content', 'description', 'text' ) as $key ) {
                 if ( isset( $item[ $key ] ) && is_scalar( $item[ $key ] ) ) {
@@ -127,6 +122,18 @@ if ( ! function_exists( 'fts_v2_vm_itinerary_items' ) ) {
                 }
             }
 
+            $title = fts_v2_vm_text_value( $item, array( 'title', 'heading', 'label', 'day' ) );
+            if ( $title === '' && $content === '' ) {
+                continue;
+            }
+
+            $fallback_index++;
+            if ( $title === '' ) {
+                $title = sprintf( __( 'Stop %d', 'fts' ), $fallback_index );
+            }
+
+            $label = fts_v2_vm_text_value( $item, array( 'day', 'label' ) );
+
             $itinerary_items[] = array(
                 'title'   => $title,
                 'label'   => $label,
@@ -135,6 +142,51 @@ if ( ! function_exists( 'fts_v2_vm_itinerary_items' ) ) {
         }
 
         return $itinerary_items;
+    }
+}
+
+if ( ! function_exists( 'fts_v2_legacy_cost_items' ) ) {
+    function fts_v2_legacy_cost_items( $raw ) {
+        $items = array();
+        $raw_string = '';
+
+        if ( is_array( $raw ) ) {
+            $parts = array();
+            foreach ( $raw as $raw_item ) {
+                if ( is_scalar( $raw_item ) ) {
+                    $parts[] = (string) $raw_item;
+                }
+            }
+            $raw_string = implode( "\n", $parts );
+        } elseif ( is_scalar( $raw ) ) {
+            $raw_string = (string) $raw;
+        }
+
+        $raw_string = trim( $raw_string );
+        if ( $raw_string === '' ) {
+            return $items;
+        }
+
+        if ( preg_match_all( '/<li\b[^>]*>(.*?)<\/li>/is', $raw_string, $matches ) && ! empty( $matches[1] ) ) {
+            foreach ( $matches[1] as $match ) {
+                $text = trim( wp_strip_all_tags( (string) $match ) );
+                if ( $text !== '' ) {
+                    $items[] = $text;
+                }
+            }
+            if ( ! empty( $items ) ) {
+                return $items;
+            }
+        }
+
+        foreach ( preg_split( '/\r\n|[\r\n]/', $raw_string ) as $line ) {
+            $text = trim( wp_strip_all_tags( (string) $line ) );
+            if ( $text !== '' ) {
+                $items[] = $text;
+            }
+        }
+
+        return $items;
     }
 }
 
@@ -174,48 +226,20 @@ if ( empty( $fts_v2_itinerary_items ) && ! empty( $itin_titles ) && is_array( $i
 }
 $fts_v2_has_itinerary = ! empty( $fts_v2_itinerary_items );
 
-$fts_v2_legacy_included_raw = '';
-if ( isset( $cost_includes ) ) {
-    if ( is_array( $cost_includes ) ) {
-        $fts_v2_legacy_included_raw = implode( "\n", array_filter( array_map( 'strval', $cost_includes ), 'strlen' ) );
-    } elseif ( is_scalar( $cost_includes ) ) {
-        $fts_v2_legacy_included_raw = (string) $cost_includes;
-    }
-}
-
 $fts_v2_included_items = array();
 if ( $fts_v2_use_vm && ! empty( $vm_included ) && is_array( $vm_included ) ) {
     $fts_v2_included_items = fts_v2_vm_list_texts( $vm_included );
 }
-if ( empty( $fts_v2_included_items ) && trim( $fts_v2_legacy_included_raw ) !== '' ) {
-    foreach ( preg_split( '/\r\n|[\r\n]/', $fts_v2_legacy_included_raw ) as $included_item ) {
-        $included_item = trim( (string) $included_item );
-        if ( $included_item !== '' ) {
-            $fts_v2_included_items[] = $included_item;
-        }
-    }
-}
-
-$fts_v2_legacy_excluded_raw = '';
-if ( isset( $cost_excludes ) ) {
-    if ( is_array( $cost_excludes ) ) {
-        $fts_v2_legacy_excluded_raw = implode( "\n", array_filter( array_map( 'strval', $cost_excludes ), 'strlen' ) );
-    } elseif ( is_scalar( $cost_excludes ) ) {
-        $fts_v2_legacy_excluded_raw = (string) $cost_excludes;
-    }
+if ( empty( $fts_v2_included_items ) ) {
+    $fts_v2_included_items = fts_v2_legacy_cost_items( $cost_includes ?? '' );
 }
 
 $fts_v2_excluded_items = array();
 if ( $fts_v2_use_vm && ! empty( $vm_excluded ) && is_array( $vm_excluded ) ) {
     $fts_v2_excluded_items = fts_v2_vm_list_texts( $vm_excluded );
 }
-if ( empty( $fts_v2_excluded_items ) && trim( $fts_v2_legacy_excluded_raw ) !== '' ) {
-    foreach ( preg_split( '/\r\n|[\r\n]/', $fts_v2_legacy_excluded_raw ) as $excluded_item ) {
-        $excluded_item = trim( (string) $excluded_item );
-        if ( $excluded_item !== '' ) {
-            $fts_v2_excluded_items[] = $excluded_item;
-        }
-    }
+if ( empty( $fts_v2_excluded_items ) ) {
+    $fts_v2_excluded_items = fts_v2_legacy_cost_items( $cost_excludes ?? '' );
 }
 $fts_v2_has_cost_content = ! empty( $fts_v2_included_items ) || ! empty( $fts_v2_excluded_items );
 
