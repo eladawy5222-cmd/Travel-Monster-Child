@@ -2,11 +2,44 @@
 /**
  * Header V2 - Breadcrumbs + Hero Title + Rating + Meta Badges
  * Variables provided by layout-controller.php via extract()
+ *
+ * @var bool                 $use_frontend_view_model
+ * @var array<string,mixed>  $vm_hero
+ * @var array<string,mixed>  $vm_trust
+ * @var float|int|string     $display_price
+ * @var float|int|string     $old_price
+ * @var int|string           $discount_pct
+ * @var string               $free_cancellation_text
+ * @var int|string           $cancel_hours
+ * @var string               $terms_url
+ * @var bool                 $pp_eligible
+ * @var string               $pay_later_text
+ * @var string               $bold_promise
+ * @var string               $overview_excerpt
+ * @var float|int|string     $avg_rating
+ * @var int|string           $review_count
+ * @var array<int,array>     $trip_facts_items
+ * @var array<int,array>     $dest_chain
+ * @var string               $last_crumb
+ * @var string               $duration_text
+ * @var string|array         $cost_includes
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
 
 <?php
+    $fts_use_frontend_vm = ! empty( $use_frontend_view_model );
+    $fts_vm_hero  = ( isset( $vm_hero ) && is_array( $vm_hero ) ) ? $vm_hero : array();
+    $fts_vm_trust = ( isset( $vm_trust ) && is_array( $vm_trust ) ) ? $vm_trust : array();
+
+    $fts_title = get_the_title();
+    if ( $fts_use_frontend_vm && isset( $fts_vm_hero['title'] ) && is_scalar( $fts_vm_hero['title'] ) ) {
+        $fts_vm_title = trim( (string) $fts_vm_hero['title'] );
+        if ( $fts_vm_title !== '' ) {
+            $fts_title = $fts_vm_title;
+        }
+    }
+
     $fts_has_price = ( isset( $display_price ) && floatval( $display_price ) > 0 );
     $fts_cancel_text = '';
     if ( isset( $free_cancellation_text ) && is_string( $free_cancellation_text ) && trim( $free_cancellation_text ) !== '' ) {
@@ -25,8 +58,67 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     }
 
     $fts_subtitle = '';
-    if ( isset( $overview_excerpt ) && is_string( $overview_excerpt ) ) $fts_subtitle = trim( $overview_excerpt );
+    if ( $fts_use_frontend_vm && isset( $fts_vm_hero['subtitle'] ) && is_scalar( $fts_vm_hero['subtitle'] ) ) {
+        $fts_subtitle = trim( (string) $fts_vm_hero['subtitle'] );
+    }
     if ( $fts_subtitle === '' && isset( $bold_promise ) && is_string( $bold_promise ) ) $fts_subtitle = trim( $bold_promise );
+    if ( $fts_subtitle === '' && isset( $overview_excerpt ) && is_string( $overview_excerpt ) ) $fts_subtitle = trim( $overview_excerpt );
+
+    $fts_rating_value = isset( $avg_rating ) ? floatval( $avg_rating ) : 0;
+    if ( $fts_use_frontend_vm && isset( $fts_vm_trust['rating'] ) && is_numeric( $fts_vm_trust['rating'] ) ) {
+        $fts_vm_rating = floatval( $fts_vm_trust['rating'] );
+        if ( $fts_vm_rating > 0 ) {
+            $fts_rating_value = $fts_vm_rating;
+        }
+    }
+
+    $fts_review_count_value = isset( $review_count ) ? intval( $review_count ) : 0;
+    if ( $fts_use_frontend_vm && isset( $fts_vm_trust['reviews_count'] ) && is_numeric( $fts_vm_trust['reviews_count'] ) ) {
+        $fts_vm_reviews_count = max( 0, intval( $fts_vm_trust['reviews_count'] ) );
+        if ( $fts_vm_reviews_count > 0 || $fts_rating_value > 0 ) {
+            $fts_review_count_value = $fts_vm_reviews_count;
+        }
+    }
+
+    $fts_vm_badges = array();
+    if ( $fts_use_frontend_vm && ! empty( $fts_vm_hero['badges'] ) && is_array( $fts_vm_hero['badges'] ) ) {
+        foreach ( $fts_vm_hero['badges'] as $fts_vm_badge ) {
+            $fts_vm_badge_title = '';
+            $fts_vm_badge_desc  = '';
+
+            if ( is_string( $fts_vm_badge ) || is_numeric( $fts_vm_badge ) ) {
+                $fts_vm_badge_title = trim( (string) $fts_vm_badge );
+            } elseif ( is_array( $fts_vm_badge ) ) {
+                foreach ( array( 'title', 'text', 'label', 'value' ) as $fts_vm_badge_key ) {
+                    if ( isset( $fts_vm_badge[ $fts_vm_badge_key ] ) && is_scalar( $fts_vm_badge[ $fts_vm_badge_key ] ) ) {
+                        $fts_vm_badge_title = trim( (string) $fts_vm_badge[ $fts_vm_badge_key ] );
+                        if ( $fts_vm_badge_title !== '' ) {
+                            break;
+                        }
+                    }
+                }
+                foreach ( array( 'description', 'desc', 'subtitle' ) as $fts_vm_badge_desc_key ) {
+                    if ( isset( $fts_vm_badge[ $fts_vm_badge_desc_key ] ) && is_scalar( $fts_vm_badge[ $fts_vm_badge_desc_key ] ) ) {
+                        $fts_vm_badge_desc = trim( (string) $fts_vm_badge[ $fts_vm_badge_desc_key ] );
+                        if ( $fts_vm_badge_desc !== '' ) {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if ( $fts_vm_badge_title === '' ) {
+                continue;
+            }
+
+            $fts_vm_badges[] = array(
+                'icon'  => '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+                'title' => $fts_vm_badge_title,
+                'desc'  => $fts_vm_badge_desc,
+            );
+        }
+    }
+
 
     $fts_lang_value = '';
     $fts_pickup_value = '';
@@ -69,17 +161,17 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <div class="fts-v2-hero-body">
             <div class="fts-v2-hero-headline-row">
                 <div class="fts-v2-hero-headline-text">
-                    <h1 class="fts-v2-trip-title"><?php the_title(); ?></h1>
+                    <h1 class="fts-v2-trip-title"><?php echo esc_html( $fts_title ); ?></h1>
 
-                    <?php if ( $avg_rating > 0 ) : ?>
+                    <?php if ( $fts_rating_value > 0 ) : ?>
                     <div class="fts-v2-hero-rating" aria-label="<?php echo esc_attr__( 'Customer rating', 'fts' ); ?>">
                         <div class="fts-v2-stars-inline" aria-hidden="true">
                             <?php for ( $i = 1; $i <= 5; $i++ ) : ?>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="<?php echo $i <= round( $avg_rating ) ? '#FF8C00' : 'none'; ?>" stroke="#FF8C00" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="<?php echo esc_attr( $i <= round( $fts_rating_value ) ? '#FF8C00' : 'none' ); ?>" stroke="#FF8C00" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                             <?php endfor; ?>
                         </div>
-                        <strong><?php echo number_format( $avg_rating, 1 ); ?></strong>
-                        <a href="#fts-v2-sec-reviews" class="fts-v2-hero-reviews-link"><?php echo esc_html( sprintf( _n( '%s review', '%s reviews', $review_count, 'fts' ), number_format_i18n( $review_count ) ) ); ?></a>
+                        <strong><?php echo esc_html( number_format( $fts_rating_value, 1 ) ); ?></strong>
+                        <a href="#fts-v2-sec-reviews" class="fts-v2-hero-reviews-link"><?php echo esc_html( sprintf( _n( '%s review', '%s reviews', $fts_review_count_value, 'fts' ), number_format_i18n( $fts_review_count_value ) ) ); ?></a>
                     </div>
                     <?php endif; ?>
 
@@ -115,7 +207,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             <?php
                 $about_items = array();
 
-                if ( $fts_has_cancel ) {
+                if ( ! empty( $fts_vm_badges ) ) {
+                    $about_items = $fts_vm_badges;
+                } elseif ( $fts_has_cancel ) {
                     $about_items[] = array(
                         'icon'  => '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M9 16l2 2 4-4"/></svg>',
                         'title' => __( 'Free cancellation', 'fts' ),
@@ -123,7 +217,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     );
                 }
 
-                if ( $fts_has_pay_later ) {
+                if ( empty( $fts_vm_badges ) && $fts_has_pay_later ) {
                     $pl = isset( $fts_pay_later_text ) ? trim( (string) $fts_pay_later_text ) : '';
                     $pl_lc = strtolower( $pl );
                     if ( $pl_lc === strtolower( (string) __( 'Reserve now & pay later', 'fts' ) ) ) $pl = '';
@@ -134,7 +228,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     );
                 }
 
-                if ( ! empty( $duration_text ) ) {
+                if ( empty( $fts_vm_badges ) && ! empty( $duration_text ) ) {
                     $about_items[] = array(
                         'icon'  => '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
                         'title' => __( 'Duration', 'fts' ) . ' ' . esc_html( $duration_text ),
@@ -142,7 +236,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     );
                 }
 
-                if ( $fts_lang_value !== '' ) {
+                if ( empty( $fts_vm_badges ) && $fts_lang_value !== '' ) {
                     $about_items[] = array(
                         'icon'  => '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>',
                         'title' => __( 'Live tour guide', 'fts' ),
@@ -150,7 +244,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     );
                 }
 
-                if ( $fts_pickup_value !== '' ) {
+                if ( empty( $fts_vm_badges ) && $fts_pickup_value !== '' ) {
                     $about_items[] = array(
                         'icon'  => '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10l-2-4H7L5 10l-2.5 1.1C1.7 11.3 1 12.1 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 10h14"/></svg>',
                         'title' => __( 'Pickup included', 'fts' ),
@@ -172,7 +266,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 } elseif ( strpos( $ci_lc_about, 'meal' ) !== false ) {
                     $has_meals_about = true; $meals_title = __( 'Meals included', 'fts' );
                 }
-                if ( $has_meals_about ) {
+                if ( empty( $fts_vm_badges ) && $has_meals_about ) {
                     $about_items[] = array(
                         'icon'  => '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>',
                         'title' => $meals_title,
