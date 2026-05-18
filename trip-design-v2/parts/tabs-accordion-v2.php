@@ -179,6 +179,17 @@ if ( ! function_exists( 'fts_v2_legacy_cost_items' ) ) {
             }
         }
 
+        foreach ( preg_split( '/\r\n|[\r\n]/', $raw_string ) as $line ) {
+            $text = trim( wp_strip_all_tags( (string) $line ) );
+            if ( $text !== '' ) {
+                $items[] = $text;
+            }
+        }
+
+        return $items;
+    }
+}
+
 if ( ! function_exists( 'fts_v2_normalize_package_key' ) ) {
     function fts_v2_normalize_package_key( $value ) {
         if ( ! is_scalar( $value ) ) {
@@ -289,17 +300,6 @@ if ( ! function_exists( 'fts_v2_match_vm_package' ) ) {
 }
 
 $fts_v2_vm_packages = ( ! empty( $use_frontend_view_model ) && ! empty( $vm_packages ) && is_array( $vm_packages ) ) ? $vm_packages : array();
-
-        foreach ( preg_split( '/\r\n|[\r\n]/', $raw_string ) as $line ) {
-            $text = trim( wp_strip_all_tags( (string) $line ) );
-            if ( $text !== '' ) {
-                $items[] = $text;
-            }
-        }
-
-        return $items;
-    }
-}
 
 $fts_v2_use_vm = ! empty( $use_frontend_view_model );
 
