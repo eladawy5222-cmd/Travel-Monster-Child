@@ -83,12 +83,31 @@ if ( $fts_use_frontend_vm && isset( $fts_vm_trust['reviews_count'] ) && is_numer
 }
 
 $fts_cta_badge = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'badge', '' ) : '';
-$fts_cta_headline = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'headline', '' ) : '';
-$fts_cta_subheadline = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'subheadline', '' ) : '';
-$fts_cta_primary_button_text = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'primary_button_text', '' ) : '';
-$fts_cta_secondary_button_text = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'secondary_button_text', '' ) : '';
+$fts_cta_headline = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'price_text', '' ) : '';
+if ( $fts_cta_headline === '' ) {
+    $fts_cta_headline = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'headline', '' ) : '';
+}
+
+$fts_cta_subheadline = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'supporting_text', '' ) : '';
+if ( $fts_cta_subheadline === '' ) {
+    $fts_cta_subheadline = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'subheadline', '' ) : '';
+}
+
+$fts_cta_primary_button_text = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'primary', '' ) : '';
+if ( $fts_cta_primary_button_text === '' ) {
+    $fts_cta_primary_button_text = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'primary_button_text', '' ) : '';
+}
+
+$fts_cta_secondary_button_text = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'secondary', '' ) : '';
+if ( $fts_cta_secondary_button_text === '' ) {
+    $fts_cta_secondary_button_text = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'secondary_button_text', '' ) : '';
+}
+
 $fts_cta_urgency = $fts_use_frontend_vm ? $fts_vm_scalar( $fts_vm_cta, 'urgency', '' ) : '';
-$fts_cta_trust_points = $fts_use_frontend_vm ? $fts_vm_text_list( $fts_vm_cta, 'trust_points' ) : array();
+$fts_cta_trust_points = $fts_use_frontend_vm ? $fts_vm_text_list( $fts_vm_trust, 'badges' ) : array();
+if ( empty( $fts_cta_trust_points ) ) {
+    $fts_cta_trust_points = $fts_use_frontend_vm ? $fts_vm_text_list( $fts_vm_cta, 'trust_points' ) : array();
+}
 
 $fts_sidebar_cancel_text = '';
 if ( isset( $free_cancellation_text ) && is_string( $free_cancellation_text ) && trim( $free_cancellation_text ) !== '' ) {
