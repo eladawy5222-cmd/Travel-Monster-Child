@@ -114,6 +114,12 @@
 
 }
 
+.fts-v2-package-card > .fts-v2-package-badge {
+    top: 10px !important;
+    left: 14px !important;
+    transform: none !important;
+}
+
 .fts-v2-package-card > .fts-v2-package-badge.fts-v2-badge-lowest {
     top: 10px !important;
     left: auto !important;
@@ -139,10 +145,11 @@
 
 }
 
-.fts-v2-badge-lowest.fts-v2-badge-alt {
+.fts-v2-package-card > .fts-v2-badge-lowest.fts-v2-badge-alt {
     left: auto !important;
-    right: 12px !important;
-    transform: translate(0, -50%) !important;
+    right: 14px !important;
+    top: 10px !important;
+    transform: none !important;
 }
 
 
