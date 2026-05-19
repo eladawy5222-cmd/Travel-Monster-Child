@@ -1121,6 +1121,24 @@ class FTS_Trip_Redesign_V2 {
             }
         }
 
+        $from_display_price = 0;
+        $from_package_id    = 0;
+        if ( ! empty( $packages_list ) && is_array( $packages_list ) ) {
+            foreach ( $packages_list as $p0 ) {
+                if ( ! is_array( $p0 ) ) continue;
+                $p0_price = floatval( $p0['display_price'] ?? 0 );
+                if ( $p0_price <= 0 ) continue;
+                if ( $from_display_price <= 0 || $p0_price < $from_display_price ) {
+                    $from_display_price = $p0_price;
+                    $from_package_id = intval( $p0['id'] ?? 0 );
+                }
+            }
+        }
+        if ( $from_display_price <= 0 && isset( $display_price ) && is_numeric( $display_price ) ) {
+            $from_display_price = floatval( $display_price );
+        }
+        $from_price_text = ( $from_display_price > 0 ) ? (string) wte_get_formated_price( $from_display_price ) : '';
+
         // ── Trustindex Widget ──
         $trustindex_code = function_exists( 'get_field' ) ? get_field( 'trustindex_code', $trip_id ) : '';
         if ( ! is_string( $trustindex_code ) || trim( $trustindex_code ) === '' ) {
@@ -1230,6 +1248,7 @@ class FTS_Trip_Redesign_V2 {
             'vm_hero', 'vm_trust', 'vm_quick_info', 'vm_highlights', 'vm_itinerary',
             'vm_packages', 'vm_included', 'vm_excluded', 'vm_faq', 'vm_images', 'vm_cta',
             'price', 'sale_price', 'has_sale', 'display_price', 'old_price', 'discount_pct',
+            'from_display_price', 'from_package_id', 'from_price_text',
             'review_data', 'avg_rating', 'review_count', 'reviews', 'reviews_tab_content',
             'duration', 'duration_unit', 'nights', 'duration_text',
             'min_pax', 'max_pax', 'group_text',
@@ -1372,6 +1391,8 @@ class FTS_Trip_Redesign_V2 {
             'decimalDigits'  => ( isset( $settings['decimal_digits'] ) && $settings['decimal_digits'] !== 'default' ) ? intval( $settings['decimal_digits'] ) : 0,
             'checkoutUrl'    => $data['checkout_url'],
             'currencySymbol' => fts_v2_get_active_currency_symbol(),
+            'fromPriceText'  => (string) ( $data['from_price_text'] ?? '' ),
+            'fromPackageId'  => intval( $data['from_package_id'] ?? 0 ),
             'whatsappNumber' => $whatsapp_number_js,
             'payLater'       => array(
                 'enabled'     => ! empty( $data['pp_eligible'] ),

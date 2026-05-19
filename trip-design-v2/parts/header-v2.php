@@ -40,7 +40,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         }
     }
 
-    $fts_has_price = ( isset( $display_price ) && floatval( $display_price ) > 0 );
+    $fts_from_display_price = 0;
+    if ( isset( $from_display_price ) && is_numeric( $from_display_price ) && floatval( $from_display_price ) > 0 ) {
+        $fts_from_display_price = floatval( $from_display_price );
+    } elseif ( isset( $display_price ) && is_numeric( $display_price ) && floatval( $display_price ) > 0 ) {
+        $fts_from_display_price = floatval( $display_price );
+    }
+    $fts_has_price = ( $fts_from_display_price > 0 );
     $fts_cancel_text = '';
     if ( isset( $free_cancellation_text ) && is_string( $free_cancellation_text ) && trim( $free_cancellation_text ) !== '' ) {
         $fts_cancel_text = trim( $free_cancellation_text );
@@ -187,7 +193,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                         <?php if ( $old_price > 0 ) : ?>
                         <span class="fts-v2-hero-price-old"><?php echo esc_html( wte_get_formated_price( $old_price ) ); ?></span>
                         <?php endif; ?>
-                        <span class="fts-v2-hero-price-current"><?php echo esc_html( wte_get_formated_price( $display_price ) ); ?></span>
+                        <span class="fts-v2-hero-price-current"><?php echo esc_html( wte_get_formated_price( $fts_from_display_price ) ); ?></span>
                     </div>
                     <span class="fts-v2-hero-price-pp"><?php echo esc_html__( 'per person', 'fts' ); ?></span>
                     <?php if ( $discount_pct > 0 ) : ?>

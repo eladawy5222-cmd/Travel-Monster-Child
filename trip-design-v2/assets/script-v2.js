@@ -158,26 +158,28 @@
                 var pkgs = data.packages || [];
                 var waNumber = data.whatsappNumber ? String(data.whatsappNumber) : '';
                 var waLink = waNumber ? ('https://wa.me/' + waNumber) : '';
-                var minPkg = null;
-                for (var i = 0; i < pkgs.length; i++) {
-                    var p = parseFloat(pkgs[i].display_price) || 0;
-                    if (p <= 0) continue;
-                    if (!minPkg || p < (parseFloat(minPkg.display_price) || 0)) minPkg = pkgs[i];
+                var mobFromPriceText = data.fromPriceText ? String(data.fromPriceText) : '';
+                var mobFromPackageId = parseInt(data.fromPackageId, 10) || 0;
+                var fromPkg = null;
+                if (mobFromPackageId) {
+                    for (var i = 0; i < pkgs.length; i++) {
+                        if (parseInt(pkgs[i].id, 10) === mobFromPackageId) { fromPkg = pkgs[i]; break; }
+                    }
                 }
 
                 var curPriceText = '';
                 var oldPriceText = '';
-                if (minPkg) {
-                    curPriceText = fmtPriceCompact(minPkg.display_price);
+                if (mobFromPriceText && mobFromPackageId) {
+                    curPriceText = mobFromPriceText;
                 } else {
                     curPriceText = $('.fts-v2-booking-current-price').first().text() || '';
                     oldPriceText = $('.fts-v2-booking-old-price').first().text() || '';
                 }
 
-                var barHtml = '<div class="fts-v2-mobile-book-bar" data-mode="' + (minPkg ? 'from' : 'price') + '">' +
+                var barHtml = '<div class="fts-v2-mobile-book-bar" data-mode="' + ((mobFromPriceText && mobFromPackageId) ? 'from' : 'price') + '">' +
                     '<div class="fts-v2-mob-left">' +
                         '<div class="fts-v2-mob-price-row">' +
-                            (minPkg ? '<span class="fts-v2-mob-from">' + mobFromText + '</span> ' : '') +
+                            ((mobFromPriceText && mobFromPackageId) ? '<span class="fts-v2-mob-from">' + mobFromText + '</span> ' : '') +
                             (oldPriceText ? '<span class="fts-v2-mob-old">' + oldPriceText + '</span> ' : '') +
                             '<span class="fts-v2-mob-current">' + curPriceText + '</span>' +
                             '<span class="fts-v2-mob-per"> ' + mobPerPerson + '</span>' +
@@ -202,8 +204,8 @@
                 $('body').append(barHtml);
                 this.$bar = $('.fts-v2-mobile-book-bar').last();
 
-                if (minPkg) {
-                    this.setFrom(minPkg);
+                if (mobFromPriceText && mobFromPackageId && fromPkg) {
+                    this.setFrom(fromPkg);
                 }
 
                 if (waLink) {
@@ -220,7 +222,9 @@
                 if (!this.$bar.find('.fts-v2-mob-from').length) {
                     this.$bar.find('.fts-v2-mob-price-row').prepend('<span class="fts-v2-mob-from">' + mobFromText + '</span> ');
                 }
-                this.$bar.find('.fts-v2-mob-current').text(fmtPriceCompact(pkg.display_price));
+                var mobFromPriceText = data.fromPriceText ? String(data.fromPriceText) : '';
+                if (mobFromPriceText) this.$bar.find('.fts-v2-mob-current').text(mobFromPriceText);
+                else this.$bar.find('.fts-v2-mob-current').text(fmtPriceCompact(pkg.display_price));
                 this.$bar.find('.fts-v2-mob-pkg').hide().text('');
             },
             setSelected: function(pkg) {
