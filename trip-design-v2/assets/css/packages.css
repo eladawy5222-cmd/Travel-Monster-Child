@@ -114,13 +114,11 @@
 
 }
 
-.fts-v2-packages-grid .fts-v2-package-badge {
+.fts-v2-package-card > .fts-v2-package-badge.fts-v2-badge-lowest {
     top: 10px !important;
-    transform: translate(-50%, 0) !important;
-}
-
-.fts-v2-packages-grid .fts-v2-package-card > .fts-v2-package-badge:nth-of-type(2) {
-    transform: translate(0, 0) !important;
+    left: auto !important;
+    right: 14px !important;
+    transform: none !important;
 }
 
 .fts-v2-badge-popular {
