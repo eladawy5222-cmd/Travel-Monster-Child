@@ -138,6 +138,21 @@ if ( $fts_cta_subheadline !== '' && ( strpos( $fts_cta_subheadline, '€' ) !== 
     $fts_cta_subheadline = '';
 }
 
+if ( $fts_cta_headline !== '' && ! $fts_sidebar_is_eur_price ) {
+    $fts_cta_headline_lc = strtolower( $fts_cta_headline );
+    $fts_cta_headline_has_eur = (
+        strpos( $fts_cta_headline, '€' ) !== false
+        || stripos( $fts_cta_headline, 'EUR' ) !== false
+        || stripos( $fts_cta_headline, '&euro;' ) !== false
+        || stripos( $fts_cta_headline, '&#8364;' ) !== false
+        || stripos( $fts_cta_headline, '&#x20ac;' ) !== false
+    );
+    $fts_cta_headline_looks_like_price_copy = ( strpos( $fts_cta_headline_lc, 'from' ) !== false && strpos( $fts_cta_headline_lc, 'person' ) !== false );
+    if ( $fts_cta_headline_has_eur && $fts_cta_headline_looks_like_price_copy ) {
+        $fts_cta_headline = '';
+    }
+}
+
 $fts_sidebar_duration_from_facts = '';
 if ( isset( $trip_facts_items ) && is_array( $trip_facts_items ) ) {
     foreach ( $trip_facts_items as $sbit ) {
