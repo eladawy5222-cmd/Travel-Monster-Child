@@ -232,8 +232,16 @@
                 if (!pkg) return;
                 this.$bar.attr('data-mode', 'selected');
                 this.$bar.find('.fts-v2-mob-old').remove();
-                this.$bar.find('.fts-v2-mob-from').remove();
-                this.$bar.find('.fts-v2-mob-current').text(fmtPriceCompact(pkg.display_price));
+                var mobFromPriceText = data.fromPriceText ? String(data.fromPriceText) : '';
+                if (mobFromPriceText) {
+                    if (!this.$bar.find('.fts-v2-mob-from').length) {
+                        this.$bar.find('.fts-v2-mob-price-row').prepend('<span class="fts-v2-mob-from">' + mobFromText + '</span> ');
+                    }
+                    this.$bar.find('.fts-v2-mob-current').text(mobFromPriceText);
+                } else {
+                    this.$bar.find('.fts-v2-mob-from').remove();
+                    this.$bar.find('.fts-v2-mob-current').text(fmtPriceCompact(pkg.display_price));
+                }
                 var name = decodeHtml2(pkg.name || '');
                 if (name) {
                     this.$bar.find('.fts-v2-mob-pkg').text(mobSelectedText + ': ' + name).show();

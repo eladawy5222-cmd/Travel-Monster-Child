@@ -713,6 +713,11 @@ $fts_v2_has_faq_items = ! empty( $fts_v2_faq_items );
             ?>
             <?php if ( ! empty( $packages_list ) ) : ?>
             <?php
+                $wte_settings = get_option( 'wp_travel_engine_settings', array() );
+                $wte_decimals = isset( $wte_settings['decimal_digits'] ) && $wte_settings['decimal_digits'] !== 'default'
+                    ? intval( $wte_settings['decimal_digits'] )
+                    : 0;
+
                 $pkg_min_price = null;
                 foreach ( (array) $packages_list as $p0 ) {
                     $p0_price = floatval( $p0['display_price'] ?? 0 );
@@ -819,14 +824,12 @@ $fts_v2_has_faq_items = ! empty( $fts_v2_faq_items );
 
                     <?php
                         $dp = floatval( $pkg['display_price'] ?? 0 );
-                        $diff = ( $pkg_min_price !== null && $dp > 0 ) ? ( $dp - floatval( $pkg_min_price ) ) : 0;
+                        $dp_r = ( $dp > 0 ) ? round( $dp, $wte_decimals ) : 0;
+                        $min_r = ( $pkg_min_price !== null && floatval( $pkg_min_price ) > 0 ) ? round( floatval( $pkg_min_price ), $wte_decimals ) : 0;
+                        $diff = ( $min_r > 0 && $dp_r > 0 ) ? ( $dp_r - $min_r ) : 0;
                     ?>
-                    <?php if ( $pkg_min_price !== null && $dp > 0 ) : ?>
-                        <?php if ( $diff <= 0.01 ) : ?>
-                            <div class="fts-v2-pkg-delta is-lowest"><?php echo esc_html__( 'Lowest price', 'fts' ); ?></div>
-                        <?php else : ?>
-                            <div class="fts-v2-pkg-delta"><?php echo esc_html( sprintf( __( '+%s vs lowest', 'fts' ), wte_get_formated_price( $diff ) ) ); ?></div>
-                        <?php endif; ?>
+                    <?php if ( $diff > 0 ) : ?>
+                        <div class="fts-v2-pkg-delta"><?php echo esc_html( sprintf( __( '+%s vs lowest', 'fts' ), wte_get_formated_price( $diff ) ) ); ?></div>
                     <?php endif; ?>
 
                     <?php if ( ! empty( $pkg_display_features ) ) : ?>
