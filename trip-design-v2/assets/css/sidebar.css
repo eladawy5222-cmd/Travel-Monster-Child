@@ -21,10 +21,15 @@
 /* ─── Booking Card Shell ─── */
 .fts-v2-booking-card {
     background: var(--v2-bg) !important;
-    border: 1px solid var(--v2-border) !important;
+    border: 1px solid rgba(15, 23, 42, 0.10) !important;
     border-radius: var(--v2-radius-xl) !important;
     overflow: hidden !important;
-    box-shadow: var(--v2-shadow-md) !important;
+    box-shadow: 0 18px 44px rgba(15, 23, 42, 0.12) !important;
+    transition: box-shadow 0.25s ease, transform 0.25s ease !important;
+}
+.fts-v2-booking-card:hover {
+    box-shadow: 0 22px 54px rgba(15, 23, 42, 0.14) !important;
+    transform: translateY(-1px) !important;
 }
 
 /* ═══════════════════════════════════════
@@ -32,7 +37,7 @@
    ═══════════════════════════════════════ */
 .fts-v2-booking-price-top {
     background: var(--v2-dark) !important;
-    padding: 12px 16px 10px !important;
+    padding: 14px 16px 12px !important;
     border-radius: var(--v2-radius-xl) var(--v2-radius-xl) 0 0 !important;
 }
 .fts-v2-booking-price-header {
@@ -78,7 +83,7 @@
 }
 .fts-v2-booking-current-price {
     font-family: var(--v2-font-heading) !important;
-    font-size: 22px !important;
+    font-size: 24px !important;
     font-weight: 800 !important;
     color: #fff !important;
 }
@@ -612,19 +617,19 @@
    6. TRIP HIGHLIGHTS (sidebar)
    ═══════════════════════════════════════ */
 .fts-v2-booking-trust {
-    padding: 6px 12px !important;
+    padding: 10px 16px !important;
     border-bottom: 1px solid var(--v2-border) !important;
 }
 .fts-v2-sidebar-highlights {
     display: flex !important;
     flex-direction: column !important;
-    gap: 0 !important;
-    padding: 10px 16px !important;
+    gap: 6px !important;
+    padding: 12px 16px !important;
 }
 .fts-v2-sidebar-highlights .fts-v2-booking-trust-item {
     font-size: 12px !important;
     color: var(--v2-text) !important;
-    padding: 5px 0 !important;
+    padding: 3px 0 !important;
     display: flex !important;
     align-items: flex-start !important;
     gap: 8px !important;
@@ -656,7 +661,9 @@
    7. CHECK AVAILABILITY BUTTON
    ═══════════════════════════════════════ */
 .fts-v2-booking-cta {
-    padding: 10px 14px !important;
+    padding: 14px 16px !important;
+    border-top: 1px solid rgba(15, 23, 42, 0.06) !important;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%) !important;
 }
 .fts-v2-check-btn {
     display: block !important;
@@ -665,35 +672,42 @@
     color: #fff !important;
     border: none !important;
     border-radius: 50px !important;
-    padding: 12px 18px !important;
-    font-size: 13px !important;
+    padding: 14px 18px !important;
+    font-size: 14px !important;
     font-weight: 700 !important;
     font-family: var(--v2-font-heading) !important;
     cursor: pointer !important;
     transition: all 0.2s !important;
     text-align: center !important;
     letter-spacing: 0.3px !important;
+    box-shadow: 0 14px 28px rgba(255, 107, 53, 0.22) !important;
 }
 .fts-v2-check-btn:hover {
     background: var(--v2-primary-dark, #e55a28) !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 15px rgba(255,107,53,0.35) !important;
 }
+.fts-v2-check-btn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.22), 0 14px 28px rgba(255, 107, 53, 0.18) !important;
+}
 
 /* ═══════════════════════════════════════
    8. MICRO OBJECTIONS (under CTA)
    ═══════════════════════════════════════ */
 .fts-v2-booking-micro {
-    padding: 4px 14px 10px !important;
+    padding: 12px 16px 14px !important;
     display: grid !important;
     gap: 6px !important;
+    background: #f8fafc !important;
+    border-top: 1px solid rgba(15, 23, 42, 0.06) !important;
 }
 .fts-v2-booking-micro-title {
     font-family: var(--v2-font-heading) !important;
     font-size: 12px !important;
     font-weight: 800 !important;
     color: var(--v2-dark) !important;
-    margin: 2px 0 2px !important;
+    margin: 0 0 2px !important;
 }
 .fts-v2-booking-micro-item {
     display: flex !important;
@@ -754,7 +768,7 @@
     align-items: center !important;
     justify-content: center !important;
     gap: 8px !important;
-    padding: 10px 14px !important;
+    padding: 12px 14px !important;
     border-top: 1px solid var(--v2-border) !important;
 }
 .fts-v2-pay-icon {

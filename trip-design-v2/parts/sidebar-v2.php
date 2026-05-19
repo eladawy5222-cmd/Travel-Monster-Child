@@ -126,6 +126,49 @@ if ( $fts_cta_secondary_button_text === '' ) {
 
 $wa_raw    = trim( (string) apply_filters( 'fts_whatsapp_number', '+201000479285' ) );
 $wa_digits = preg_replace( '/\D+/', '', $wa_raw );
+
+$fts_sidebar_price_text = '';
+if ( isset( $display_price ) && is_numeric( $display_price ) ) {
+    $fts_sidebar_price_text = (string) wte_get_formated_price( $display_price );
+}
+$fts_sidebar_is_eur_price = ( $fts_sidebar_price_text !== '' )
+    && ( strpos( $fts_sidebar_price_text, '€' ) !== false || stripos( $fts_sidebar_price_text, 'EUR' ) !== false );
+
+if ( $fts_cta_subheadline !== '' && ( strpos( $fts_cta_subheadline, '€' ) !== false || stripos( $fts_cta_subheadline, 'EUR' ) !== false ) && ! $fts_sidebar_is_eur_price ) {
+    $fts_cta_subheadline = '';
+}
+
+$fts_sidebar_duration_from_facts = '';
+if ( isset( $trip_facts_items ) && is_array( $trip_facts_items ) ) {
+    foreach ( $trip_facts_items as $sbit ) {
+        if ( ! is_array( $sbit ) ) {
+            continue;
+        }
+        $sblbl = strtolower( trim( (string) ( $sbit['label'] ?? '' ) ) );
+        $sbval = trim( (string) ( $sbit['value'] ?? '' ) );
+        if ( $sblbl === '' || $sbval === '' ) {
+            continue;
+        }
+        if ( strpos( $sblbl, 'duration' ) !== false || strpos( $sblbl, 'مدة' ) !== false ) {
+            $fts_sidebar_duration_from_facts = $sbval;
+            break;
+        }
+    }
+}
+
+$fts_sidebar_duration_value = '';
+if ( isset( $duration_text ) && is_string( $duration_text ) && trim( $duration_text ) !== '' ) {
+    $fts_sidebar_duration_value = trim( $duration_text );
+}
+if ( $fts_sidebar_duration_from_facts !== '' ) {
+    $d_main = strtolower( $fts_sidebar_duration_value );
+    $d_fact = strtolower( $fts_sidebar_duration_from_facts );
+    $fact_has_hours = ( strpos( $d_fact, 'hour' ) !== false || strpos( $d_fact, 'hours' ) !== false || strpos( $d_fact, 'ساعة' ) !== false );
+    $main_has_days  = ( strpos( $d_main, 'day' ) !== false || strpos( $d_main, 'days' ) !== false || strpos( $d_main, 'يوم' ) !== false );
+    if ( $fts_sidebar_duration_value === '' || ( $main_has_days && $fact_has_hours ) ) {
+        $fts_sidebar_duration_value = $fts_sidebar_duration_from_facts;
+    }
+}
 ?>
 
 <div class="fts-v2-sidebar-wrapper" id="fts-v2-booking-sidebar">
@@ -243,16 +286,19 @@ $wa_digits = preg_replace( '/\D+/', '', $wa_raw );
                     }
 
                     if ( ! empty( $pp_eligible ) && isset( $pay_later_text ) && is_string( $pay_later_text ) && trim( $pay_later_text ) !== '' ) {
-                        $sb_items[] = array(
-                            'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>',
-                            'text' => trim( $pay_later_text ),
-                        );
+                        $sb_pay_later_text = trim( $pay_later_text );
+                        if ( ! ( ( strpos( $sb_pay_later_text, '€' ) !== false || stripos( $sb_pay_later_text, 'EUR' ) !== false ) && ! $fts_sidebar_is_eur_price ) ) {
+                            $sb_items[] = array(
+                                'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>',
+                                'text' => $sb_pay_later_text,
+                            );
+                        }
                     }
 
-                    if ( ! empty( $duration_text ) ) {
+                    if ( $fts_sidebar_duration_value !== '' ) {
                         $sb_items[] = array(
                             'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-                            'text' => __( 'Duration', 'fts' ) . ' ' . esc_html( $duration_text ),
+                            'text' => __( 'Duration', 'fts' ) . ' ' . esc_html( $fts_sidebar_duration_value ),
                         );
                     }
 
@@ -335,15 +381,11 @@ $wa_digits = preg_replace( '/\D+/', '', $wa_raw );
             <div class="fts-v2-booking-micro">
                 <div class="fts-v2-booking-micro-title"><?php echo esc_html__( 'Book with confidence', 'fts' ); ?></div>
                 <?php
-                    $duration_value = '';
-                    if ( isset( $duration_text ) && is_string( $duration_text ) && trim( $duration_text ) !== '' ) {
-                        $duration_value = trim( $duration_text );
-                    }
-                    if ( $duration_value !== '' ) :
+                    if ( $fts_sidebar_duration_value !== '' ) :
                 ?>
                 <div class="fts-v2-booking-micro-item">
                     <i class="fa fa-clock-o"></i>
-                    <span><?php echo esc_html( sprintf( __( 'Duration: %s', 'fts' ), $duration_value ) ); ?></span>
+                    <span><?php echo esc_html( sprintf( __( 'Duration: %s', 'fts' ), $fts_sidebar_duration_value ) ); ?></span>
                 </div>
                 <?php endif; ?>
                 <?php if ( $wa_digits ) : ?>

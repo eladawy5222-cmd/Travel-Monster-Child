@@ -595,7 +595,9 @@
 
         right: 0 !important;
 
-        background: var(--v2-bg, #fff) !important;
+        background: rgba(255, 255, 255, 0.96) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
 
         min-height: var(--fts-mobbar-min-h) !important;
         padding-top: var(--fts-mobbar-pad-top) !important;
@@ -603,7 +605,7 @@
         padding-left: calc(var(--fts-mobbar-pad-x) + env(safe-area-inset-left)) !important;
         padding-right: calc(var(--fts-mobbar-pad-x) + env(safe-area-inset-right)) !important;
         box-sizing: border-box !important;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.12) !important;
+        box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.14) !important;
 
         z-index: 99999 !important;
 
@@ -614,7 +616,7 @@
 
         align-items: center !important;
 
-        border-top: 1px solid var(--v2-border, #e9ecef) !important;
+        border-top: 1px solid rgba(15, 23, 42, 0.10) !important;
 
     }
 
@@ -732,6 +734,9 @@
 
         flex-shrink: 0 !important;
 
+    }
+    .fts-v2-mobile-book-bar .fts-v2-mob-btn {
+        box-shadow: 0 14px 28px rgba(232, 80, 30, 0.22) !important;
     }
 
     .fts-v2-mob-actions {
