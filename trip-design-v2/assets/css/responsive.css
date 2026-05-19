@@ -178,6 +178,19 @@
     .fts-v2-hero-gallery-grid { display: none !important; }
     .fts-v2-hero-gallery:not(.fts-v2-hero-gallery--slider-only) .fts-v2-gallery-slider { display: block !important; }
 
+    .fts-v2-hero-gallery {
+        padding: 0 14px !important;
+    }
+
+    .fts-v2-hero-gallery .fts-v2-gallery-slide {
+        height: 360px !important;
+    }
+
+    .fts-v2-hero-gallery .fts-v2-gallery-slider {
+        border-radius: 16px !important;
+        box-shadow: 0 18px 44px rgba(15, 23, 42, 0.14) !important;
+    }
+
     .fts-v2-gallery-more {
 
         display: inline-flex !important;
