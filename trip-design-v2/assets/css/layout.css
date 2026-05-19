@@ -1,9 +1,14 @@
 /* ============================================================================
    FTS V2 - Main Layout (Two-Column)
    ============================================================================ */
+.fts-v2-root .fts-v2-container {
+    max-width: 1360px !important;
+    padding: 0 24px !important;
+}
+
 .fts-v2-main-layout {
     display: flex !important;
-    gap: 15px !important;
+    gap: 18px !important;
     padding-top: 32px !important;
     padding-bottom: 60px !important;
     align-items: stretch !important;
@@ -13,7 +18,11 @@
     min-width: 0 !important;
 }
 .fts-v2-sidebar-col {
-    width: 380px !important;
+    width: 360px !important;
     flex-shrink: 0 !important;
     overflow: visible !important;
+}
+
+.fts-v2-sidebar-wrapper {
+    z-index: 1101 !important;
 }

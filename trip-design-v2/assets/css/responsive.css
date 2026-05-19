@@ -112,7 +112,7 @@
 
 
 
-    body.single-trip { padding-bottom: 96px !important; }
+    body.single-trip { padding-bottom: calc(96px + env(safe-area-inset-bottom)) !important; }
 
 
     /* Header */
@@ -231,6 +231,20 @@
     .fts-v2-accordion-header { padding: 6px 10px !important; }
     .fts-v2-accordion-body { padding: 0 10px !important; }
     .fts-v2-accordion-item.is-open > .fts-v2-accordion-body { padding: 0 10px 10px !important; }
+
+    #fts-v2-sec-overview > .fts-v2-accordion-body,
+    #fts-v2-sec-highlights > .fts-v2-accordion-body,
+    #fts-v2-sec-includes > .fts-v2-accordion-body {
+        max-height: none !important;
+        overflow: visible !important;
+        padding: 0 10px 10px !important;
+    }
+
+    #fts-v2-sec-overview .fts-v2-accordion-icon,
+    #fts-v2-sec-highlights .fts-v2-accordion-icon,
+    #fts-v2-sec-includes .fts-v2-accordion-icon {
+        display: none !important;
+    }
 
 
     .fts-v2-title-actions .fts-v2-action-btn span { display: none !important; }

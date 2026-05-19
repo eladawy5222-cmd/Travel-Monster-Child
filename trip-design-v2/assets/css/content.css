@@ -119,6 +119,22 @@
     }
 }
 
+.fts-v2-root .fts-v2-tabs-nav {
+    background: rgba(26, 43, 73, 0.92) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.fts-v2-root .fts-v2-tab-link {
+    padding: 10px 14px !important;
+}
+
+.fts-v2-root .fts-v2-section {
+    scroll-margin-top: 132px;
+}
+
 .fts-v2-hero-media {
     position: relative !important;
     margin-top: 10px !important;
