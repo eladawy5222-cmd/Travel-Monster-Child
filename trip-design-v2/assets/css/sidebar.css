@@ -36,9 +36,10 @@
    1. DARK NAVY PRICE TOP (compact)
    ═══════════════════════════════════════ */
 .fts-v2-booking-price-top {
-    background: var(--v2-dark) !important;
+    background: linear-gradient(180deg, rgba(26, 43, 73, 1) 0%, rgba(15, 23, 42, 1) 100%) !important;
     padding: 14px 16px 12px !important;
     border-radius: var(--v2-radius-xl) var(--v2-radius-xl) 0 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 .fts-v2-booking-price-header {
     display: flex !important;
@@ -83,7 +84,7 @@
 }
 .fts-v2-booking-current-price {
     font-family: var(--v2-font-heading) !important;
-    font-size: 24px !important;
+    font-size: 26px !important;
     font-weight: 800 !important;
     color: #fff !important;
 }
@@ -640,8 +641,8 @@
     width: 16px !important;
     height: 16px !important;
     margin-top: 1px !important;
-    stroke: var(--v2-text-light) !important;
-    opacity: 0.55 !important;
+    stroke: rgba(148, 163, 184, 0.95) !important;
+    opacity: 0.78 !important;
 }
 .fts-v2-booking-trust-item {
     font-size: 10px !important;
@@ -664,6 +665,15 @@
     padding: 14px 16px !important;
     border-top: 1px solid rgba(15, 23, 42, 0.06) !important;
     background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%) !important;
+}
+
+.fts-v2-booking-cta .fts-v2-booking-micro-title {
+    font-size: 13px !important;
+}
+
+.fts-v2-booking-cta .fts-v2-booking-per-person {
+    color: var(--v2-text-light) !important;
+    font-size: 12px !important;
 }
 .fts-v2-check-btn {
     display: block !important;

@@ -183,7 +183,11 @@
     }
 
     .fts-v2-hero-gallery .fts-v2-gallery-slide {
-        height: 360px !important;
+        height: 400px !important;
+    }
+
+    .fts-v2-hero-gallery .fts-v2-gallery-slide img {
+        object-position: center !important;
     }
 
     .fts-v2-hero-gallery .fts-v2-gallery-slider {

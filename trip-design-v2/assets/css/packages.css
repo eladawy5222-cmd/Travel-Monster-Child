@@ -12,7 +12,7 @@
 
     display: grid !important;
 
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)) !important;
 
     gap: 15px !important;
 
@@ -215,6 +215,10 @@
 .fts-v2-package-price {
 
     margin-bottom: 14px !important;
+    padding: 12px 14px !important;
+    border-radius: 14px !important;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
 
 }
 
@@ -236,7 +240,7 @@
 
     font-family: var(--v2-font-heading) !important;
 
-    font-size: 30px !important;
+    font-size: 28px !important;
 
     font-weight: 800 !important;
 
@@ -250,7 +254,7 @@
 
     color: var(--v2-text-light) !important;
 
-    font-size: 14px !important;
+    font-size: 12px !important;
 
 }
 

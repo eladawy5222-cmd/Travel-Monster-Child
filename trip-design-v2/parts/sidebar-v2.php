@@ -134,7 +134,7 @@ if ( isset( $display_price ) && is_numeric( $display_price ) ) {
 $fts_sidebar_is_eur_price = ( $fts_sidebar_price_text !== '' )
     && ( strpos( $fts_sidebar_price_text, '€' ) !== false || stripos( $fts_sidebar_price_text, 'EUR' ) !== false );
 
-if ( $fts_cta_subheadline !== '' && ( strpos( $fts_cta_subheadline, '€' ) !== false || stripos( $fts_cta_subheadline, 'EUR' ) !== false ) && ! $fts_sidebar_is_eur_price ) {
+if ( $fts_cta_subheadline !== '' && ( strpos( $fts_cta_subheadline, '€' ) !== false || stripos( $fts_cta_subheadline, 'EUR' ) !== false || stripos( $fts_cta_subheadline, '&euro;' ) !== false || stripos( $fts_cta_subheadline, '&#8364;' ) !== false || stripos( $fts_cta_subheadline, '&#x20ac;' ) !== false ) && ! $fts_sidebar_is_eur_price ) {
     $fts_cta_subheadline = '';
 }
 
@@ -287,12 +287,10 @@ if ( $fts_sidebar_duration_from_facts !== '' ) {
 
                     if ( ! empty( $pp_eligible ) && isset( $pay_later_text ) && is_string( $pay_later_text ) && trim( $pay_later_text ) !== '' ) {
                         $sb_pay_later_text = trim( $pay_later_text );
-                        if ( ! ( ( strpos( $sb_pay_later_text, '€' ) !== false || stripos( $sb_pay_later_text, 'EUR' ) !== false ) && ! $fts_sidebar_is_eur_price ) ) {
-                            $sb_items[] = array(
-                                'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>',
-                                'text' => $sb_pay_later_text,
-                            );
-                        }
+                        $sb_items[] = array(
+                            'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>',
+                            'text' => $sb_pay_later_text,
+                        );
                     }
 
                     if ( $fts_sidebar_duration_value !== '' ) {
