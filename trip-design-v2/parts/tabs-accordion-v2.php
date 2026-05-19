@@ -828,9 +828,6 @@ $fts_v2_has_faq_items = ! empty( $fts_v2_faq_items );
                         $min_r = ( $pkg_min_price !== null && floatval( $pkg_min_price ) > 0 ) ? round( floatval( $pkg_min_price ), $wte_decimals ) : 0;
                         $diff = ( $min_r > 0 && $dp_r > 0 ) ? ( $dp_r - $min_r ) : 0;
                     ?>
-                    <?php if ( $diff > 0 ) : ?>
-                        <div class="fts-v2-pkg-delta"><?php echo esc_html( sprintf( __( '+%s vs lowest', 'fts' ), wte_get_formated_price( $diff ) ) ); ?></div>
-                    <?php endif; ?>
 
                     <?php if ( ! empty( $pkg_display_features ) ) : ?>
                     <ul class="fts-v2-package-features">
