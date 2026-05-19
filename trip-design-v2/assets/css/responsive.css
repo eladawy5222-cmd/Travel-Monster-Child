@@ -57,20 +57,21 @@
 
 .fts-v2-packages-grid .fts-v2-package-badge {
     position: absolute !important;
-    top: -1px !important;
-    left: 50% !important;
+    top: 10px !important;
+    left: 14px !important;
     right: auto !important;
-    transform: translate(-50%, -50%) !important;
+    transform: none !important;
     max-width: calc(100% - 28px) !important;
     margin: 0 !important;
     white-space: normal !important;
     text-align: center !important;
 }
 
-.fts-v2-packages-grid .fts-v2-package-card > .fts-v2-package-badge:nth-of-type(2) {
+.fts-v2-packages-grid .fts-v2-package-card > .fts-v2-badge-lowest {
+    top: 10px !important;
     left: auto !important;
-    right: 12px !important;
-    transform: translate(0, -50%) !important;
+    right: 14px !important;
+    transform: none !important;
 }
 
 .fts-v2-packages-grid .fts-v2-package-name,

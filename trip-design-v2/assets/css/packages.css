@@ -117,10 +117,11 @@
 .fts-v2-package-card > .fts-v2-package-badge {
     top: 10px !important;
     left: 14px !important;
+    right: auto !important;
     transform: none !important;
 }
 
-.fts-v2-package-card > .fts-v2-package-badge.fts-v2-badge-lowest {
+.fts-v2-package-card > .fts-v2-badge-lowest {
     top: 10px !important;
     left: auto !important;
     right: 14px !important;
