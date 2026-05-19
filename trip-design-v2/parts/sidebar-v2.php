@@ -127,9 +127,24 @@ if ( $fts_cta_secondary_button_text === '' ) {
 $wa_raw    = trim( (string) apply_filters( 'fts_whatsapp_number', '+201000479285' ) );
 $wa_digits = preg_replace( '/\D+/', '', $wa_raw );
 
+$fts_sidebar_display_price = null;
+if ( isset( $packages_list ) && is_array( $packages_list ) ) {
+    foreach ( $packages_list as $p ) {
+        if ( ! is_array( $p ) ) continue;
+        $p_price = floatval( $p['display_price'] ?? 0 );
+        if ( $p_price <= 0 ) continue;
+        if ( $fts_sidebar_display_price === null || $p_price < $fts_sidebar_display_price ) {
+            $fts_sidebar_display_price = $p_price;
+        }
+    }
+}
+if ( $fts_sidebar_display_price === null && isset( $display_price ) && is_numeric( $display_price ) ) {
+    $fts_sidebar_display_price = floatval( $display_price );
+}
+
 $fts_sidebar_price_text = '';
-if ( isset( $display_price ) && is_numeric( $display_price ) ) {
-    $fts_sidebar_price_text = (string) wte_get_formated_price( $display_price );
+if ( $fts_sidebar_display_price !== null && $fts_sidebar_display_price > 0 ) {
+    $fts_sidebar_price_text = (string) wte_get_formated_price( $fts_sidebar_display_price );
 }
 $fts_sidebar_is_eur_price = ( $fts_sidebar_price_text !== '' )
     && ( strpos( $fts_sidebar_price_text, '€' ) !== false || stripos( $fts_sidebar_price_text, 'EUR' ) !== false );
@@ -200,7 +215,7 @@ if ( $fts_sidebar_duration_from_facts !== '' ) {
                     <?php if ( $old_price > 0 ) : ?>
                         <span class="fts-v2-booking-old-price"><?php echo esc_html( wte_get_formated_price( $old_price ) ); ?></span>
                     <?php endif; ?>
-                    <span class="fts-v2-booking-current-price"><?php echo esc_html( wte_get_formated_price( $display_price ) ); ?></span>
+                    <span class="fts-v2-booking-current-price"><?php echo esc_html( wte_get_formated_price( $fts_sidebar_display_price !== null ? $fts_sidebar_display_price : $display_price ) ); ?></span>
                     <span class="fts-v2-booking-per-person"><?php echo esc_html__( '/ person', 'fts' ); ?></span>
                 </div>
                 <?php if ( $discount_pct > 0 ) : ?>
