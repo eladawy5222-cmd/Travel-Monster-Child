@@ -460,7 +460,7 @@ $fts_v2_has_faq_items = ! empty( $fts_v2_faq_items );
 
     <!-- ==================== OVERVIEW ==================== -->
     <?php if ( $has_overview_text ) : ?>
-    <section id="fts-v2-sec-overview" class="fts-v2-section fts-v2-accordion-item">
+    <section id="fts-v2-sec-overview" class="fts-v2-section fts-v2-accordion-item fts-v2-desktop-open">
         <div class="fts-v2-accordion-header">
             <h2 class="fts-v2-section-title"><?php echo esc_html__( 'Trip Overview', 'fts' ); ?></h2>
             <span class="fts-v2-accordion-icon"><i class="fa fa-chevron-down"></i></span>
@@ -497,7 +497,7 @@ $fts_v2_has_faq_items = ! empty( $fts_v2_faq_items );
         );
         $hl_idx = 0;
     ?>
-    <section id="fts-v2-sec-highlights" class="fts-v2-section fts-v2-accordion-item">
+    <section id="fts-v2-sec-highlights" class="fts-v2-section fts-v2-accordion-item fts-v2-desktop-open">
         <div class="fts-v2-accordion-header">
             <h2 class="fts-v2-section-title"><?php echo esc_html( $highlights_title ); ?></h2>
             <span class="fts-v2-accordion-icon"><i class="fa fa-chevron-down"></i></span>
@@ -538,7 +538,7 @@ $fts_v2_has_faq_items = ! empty( $fts_v2_faq_items );
 
     <!-- ==================== INCLUDES / EXCLUDES ==================== -->
     <?php if ( $fts_v2_has_cost_content ) : ?>
-    <section id="fts-v2-sec-includes" class="fts-v2-section fts-v2-accordion-item">
+    <section id="fts-v2-sec-includes" class="fts-v2-section fts-v2-accordion-item fts-v2-desktop-open">
         <div class="fts-v2-accordion-header">
             <h2 class="fts-v2-section-title"><?php echo esc_html__( "What's Included", 'fts' ); ?></h2>
             <span class="fts-v2-accordion-icon"><i class="fa fa-chevron-down"></i></span>
@@ -882,7 +882,7 @@ $fts_v2_has_faq_items = ! empty( $fts_v2_faq_items );
 
     <!-- ==================== REVIEWS ==================== -->
     <?php if ( $has_reviews ) : ?>
-    <section id="fts-v2-sec-reviews" class="fts-v2-section fts-v2-accordion-item">
+    <section id="fts-v2-sec-reviews" class="fts-v2-section fts-v2-accordion-item fts-v2-desktop-open">
         <div class="fts-v2-accordion-header">
             <h2 class="fts-v2-section-title"><?php echo esc_html__( 'What Travelers Say', 'fts' ); ?></h2>
             <span class="fts-v2-accordion-icon"><i class="fa fa-chevron-down"></i></span>
@@ -1047,7 +1047,7 @@ $fts_v2_has_faq_items = ! empty( $fts_v2_faq_items );
                     </div>
                     <?php endif; ?>
                 </div>
-                <?php $fts_reviews_limit = 6; ?>
+                <?php $fts_reviews_limit = 3; ?>
                 <div class="fts-v2-reviews-items" data-limit="<?php echo esc_attr( (int) $fts_reviews_limit ); ?>">
                     <?php if ( ! empty( $filter_topics ) ) : ?>
                     <div class="fts-v2-review-filters" role="group" aria-label="<?php echo esc_attr__( 'Filter reviews', 'fts' ); ?>">

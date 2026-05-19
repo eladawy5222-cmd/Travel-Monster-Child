@@ -4,8 +4,8 @@
 .fts-v2-main-layout {
     display: flex !important;
     gap: 15px !important;
-    padding-top: 50px !important;
-    padding-bottom: 80px !important;
+    padding-top: 32px !important;
+    padding-bottom: 60px !important;
     align-items: stretch !important;
 }
 .fts-v2-content-col {

@@ -49,6 +49,7 @@ $from_text = ! empty( $dest_names ) ? $dest_names[0] : esc_html__( 'This Destina
         <h2 class="fts-v2-section-title"><?php echo esc_html( fts_v2_safe_sprintf( __( 'More trips from %s', 'fts' ), array( $from_text ), 'More trips from ' . $from_text ) ); ?></h2>
 
         <div class="fts-v2-related-grid fts-v2-related-slider">
+            <?php $fts_related_rendered = 0; ?>
             <?php while ( $related->have_posts() ) : $related->the_post();
                 $r_id       = get_the_ID();
                 $r_settings = get_post_meta( $r_id, 'wp_travel_engine_setting', true );
@@ -73,6 +74,9 @@ $from_text = ! empty( $dest_names ) ? $dest_names[0] : esc_html__( 'This Destina
                 $r_duration = $r_settings['trip_duration'] ?? '';
                 $r_unit     = $r_settings['trip_duration_unit'] ?? 'days';
                 $r_thumb    = get_the_post_thumbnail_url( $r_id, 'medium_large' );
+                if ( ! $r_thumb ) {
+                    continue;
+                }
                 $r_duration_text = '';
                 $r_duration_i = is_numeric( $r_duration ) ? intval( $r_duration ) : 0;
                 if ( $r_duration_i > 0 ) {
@@ -92,15 +96,10 @@ $from_text = ! empty( $dest_names ) ? $dest_names[0] : esc_html__( 'This Destina
                 $r_review = function_exists( 'wptravelengine_reviews_get_trip_reviews' ) ? wptravelengine_reviews_get_trip_reviews( $r_id ) : null;
                 $r_rating = $r_review['average'] ?? 0;
             ?>
+            <?php $fts_related_rendered++; ?>
             <a href="<?php the_permalink(); ?>" class="fts-v2-related-card">
-                <div class="fts-v2-related-card-img<?php echo $r_thumb ? '' : ' fts-v2-related-no-img'; ?>">
-                    <?php if ( $r_thumb ) : ?>
+                <div class="fts-v2-related-card-img">
                     <img src="<?php echo esc_url( $r_thumb ); ?>" alt="<?php the_title_attribute(); ?>" loading="lazy">
-                    <?php else : ?>
-                    <div class="fts-v2-related-placeholder">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-                    </div>
-                    <?php endif; ?>
                     <?php if ( $r_disc > 0 ) : ?>
                     <?php
                         $fts_rel_disc = '';
@@ -138,3 +137,5 @@ $from_text = ! empty( $dest_names ) ? $dest_names[0] : esc_html__( 'This Destina
         </div>
     </div>
 </section>
+
+<?php if ( empty( $fts_related_rendered ) ) { return; } ?>

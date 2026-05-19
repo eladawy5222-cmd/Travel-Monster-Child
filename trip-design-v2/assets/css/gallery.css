@@ -19,9 +19,9 @@
 
 /* Hero mode (GetYourGuide-like media first) */
 .fts-v2-hero-gallery {
-    max-width: 1280px !important;
+    max-width: 1360px !important;
     margin: 0 auto !important;
-    padding: 0 24px !important;
+    padding: 0 20px !important;
     position: relative !important;
 }
 
@@ -31,7 +31,7 @@
 }
 
 .fts-v2-hero-gallery .fts-v2-gallery-slide {
-    height: 520px !important;
+    height: 600px !important;
 }
 
 .fts-v2-hero-gallery .fts-v2-gallery-slide img {
@@ -78,7 +78,7 @@
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     gap: 6px !important;
-    height: 520px !important;
+    height: 600px !important;
     border-radius: 18px !important;
     overflow: hidden !important;
 }

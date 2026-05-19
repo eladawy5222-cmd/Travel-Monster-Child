@@ -1659,7 +1659,7 @@ class FTS_Trip_Redesign_V2 {
                 'body.single-trip #page,' .
                 'body.single-trip .fts-v2-root{overflow-x:clip!important;overflow-y:visible!important}' .
                 'body.single-trip .entry-content>*:not(.fts-v2-root){overflow:visible!important}' .
-                '.fts-v2-sidebar-wrapper{position:sticky!important;top:100px!important;align-self:flex-start!important}' .
+                '.fts-v2-sidebar-wrapper{position:sticky!important;top:72px!important;align-self:flex-start!important}' .
                 '.fts-v2-tabs-nav{position:sticky!important;top:56px!important;z-index:1000!important}' .
                 '.fts-v2-hero-benefit-icon{width:18px!important;height:18px!important;flex:0 0 18px!important}' .
                 '.fts-v2-gallery-slide img{display:block!important;max-width:100%!important}' .
