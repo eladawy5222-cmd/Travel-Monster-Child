@@ -372,19 +372,24 @@
 
     .fts-v2-packages-grid { grid-template-columns: 1fr !important; }
 
-    .fts-v2-package-card { padding: 18px !important; }
+    .fts-v2-package-card { padding: 16px !important; }
 
-    .fts-v2-package-name { font-size: 14px !important; }
+    .fts-v2-package-name { font-size: 15px !important; }
 
-    .fts-v2-pkg-current { font-size: 20px !important; }
+    .fts-v2-pkg-current { font-size: 22px !important; }
 
-    .fts-v2-package-select-btn { font-size: 12px !important; padding: 10px !important; }
-    .fts-v2-packages-grid .fts-v2-package-card { padding-top: 28px !important; }
+    .fts-v2-package-select-btn { font-size: 13px !important; padding: 11px 12px !important; }
+    .fts-v2-packages-grid .fts-v2-package-card { padding-top: 26px !important; }
+
+    .fts-v2-package-desc { font-size: 12px !important; margin-bottom: 8px !important; }
+    .fts-v2-package-features { gap: 6px !important; padding-bottom: 10px !important; }
+    .fts-v2-package-features li { font-size: 12px !important; line-height: 1.25 !important; }
     .fts-v2-packages-grid .fts-v2-package-badge {
         font-size: 11px !important;
         padding: 4px 12px !important;
         max-width: calc(100% - 20px) !important;
     }
+
 
 
 

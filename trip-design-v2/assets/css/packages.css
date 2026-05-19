@@ -32,7 +32,7 @@
 
     border-radius: 16px !important;
 
-    padding: 28px 24px 24px !important;
+    padding: 22px 22px 18px !important;
 
     position: relative !important;
 
@@ -146,13 +146,13 @@
 
     font-family: var(--v2-font-heading) !important;
 
-    font-size: 20px !important;
+    font-size: 18px !important;
 
     font-weight: 800 !important;
 
     color: var(--v2-dark) !important;
 
-    margin: 6px 0 4px 0 !important;
+    margin: 4px 0 4px 0 !important;
 
     line-height: 1.3 !important;
 
@@ -160,19 +160,19 @@
 
 .fts-v2-package-desc {
 
-    font-size: 14px !important;
+    font-size: 13px !important;
 
     color: #334155 !important;
 
-    margin: 0 0 12px 0 !important;
+    margin: 0 0 10px 0 !important;
 
-    line-height: 1.5 !important;
+    line-height: 1.45 !important;
 
 }
 
 /* ─── Description show-more toggle ─── */
 .fts-v2-package-desc-wrap {
-    margin: 0 0 12px 0 !important;
+    margin: 0 0 10px 0 !important;
 }
 .fts-v2-package-desc-wrap .fts-v2-package-desc {
     margin: 0 !important;
@@ -190,7 +190,7 @@
     background: none !important;
     border: none !important;
     padding: 0 !important;
-    margin: 3px 0 0 0 !important;
+    margin: 2px 0 0 0 !important;
     font-size: 11px !important;
     font-weight: 600 !important;
     color: var(--v2-text-light, #94a3b8) !important;
@@ -214,8 +214,8 @@
 
 .fts-v2-package-price {
 
-    margin-bottom: 14px !important;
-    padding: 12px 14px !important;
+    margin-bottom: 10px !important;
+    padding: 10px 12px !important;
     border-radius: 14px !important;
     background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
     border: 1px solid rgba(15, 23, 42, 0.08) !important;
@@ -228,7 +228,7 @@
 
     color: var(--v2-text-muted) !important;
 
-    font-size: 14px !important;
+    font-size: 12px !important;
 
     display: block !important;
 
@@ -240,7 +240,7 @@
 
     font-family: var(--v2-font-heading) !important;
 
-    font-size: 28px !important;
+    font-size: 26px !important;
 
     font-weight: 800 !important;
 
@@ -270,10 +270,10 @@
     color: #1f7a4a !important;
     border: 1px solid rgba(56, 161, 105, 0.25) !important;
     border-radius: 999px !important;
-    padding: 6px 10px !important;
+    padding: 5px 10px !important;
     font-size: 12px !important;
     font-weight: 700 !important;
-    margin: -6px 0 10px 0 !important;
+    margin: -4px 0 10px 0 !important;
 }
 .fts-v2-pkg-delta {
     font-size: 12px !important;
@@ -300,9 +300,9 @@
 
     flex-direction: column !important;
 
-    gap: 8px !important;
+    gap: 6px !important;
 
-    padding-bottom: 16px !important;
+    padding-bottom: 12px !important;
 
 }
 
@@ -312,19 +312,21 @@
 
     align-items: center !important;
 
-    gap: 8px !important;
+    gap: 7px !important;
 
-    font-size: 14px !important;
+    font-size: 13px !important;
 
     color: #374151 !important;
 
-    line-height: 1.3 !important;
+    line-height: 1.25 !important;
 
 }
 
 .fts-v2-package-features li svg {
 
     flex-shrink: 0 !important;
+    width: 14px !important;
+    height: 14px !important;
 
 }
 
@@ -338,7 +340,7 @@
 
     width: 100% !important;
 
-    padding: 15px !important;
+    padding: 12px 14px !important;
 
     background: var(--v2-primary) !important;
 
@@ -350,7 +352,7 @@
 
     font-weight: 700 !important;
 
-    font-size: 16px !important;
+    font-size: 14px !important;
 
     cursor: pointer !important;
 
@@ -362,10 +364,19 @@
 
     margin-top: auto !important;
 
-    box-shadow: 0 10px 22px rgba(255, 107, 53, 0.22) !important;
+    box-shadow: 0 10px 22px rgba(255, 107, 53, 0.20) !important;
 
 }
 
+.fts-v2-package-card:focus-within {
+    border-color: var(--v2-primary) !important;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.10) !important;
+}
+
+.fts-v2-package-select-btn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.20), 0 10px 22px rgba(255, 107, 53, 0.18) !important;
+}
 .fts-v2-package-select-btn:hover {
 
     background: var(--v2-primary-dark) !important;
