@@ -745,6 +745,9 @@ $fts_v2_has_faq_items = ! empty( $fts_v2_faq_items );
                         }
                     }
 
+                    $has_primary_badge = ( $pkg['badge'] === 'most_popular' || $pkg['badge'] === 'best_value' || $pkg_display_badge !== '' );
+                    if ( $has_primary_badge ) $card_cls .= ' fts-v2-has-primary-badge';
+
                     $pkg_vm_short_description = fts_v2_vm_package_text( $pkg_vm_match, array( 'short_description' ) );
                     $pkg_vm_long_description  = fts_v2_vm_package_text( $pkg_vm_match, array( 'description' ) );
                     $pkg_display_description  = '';

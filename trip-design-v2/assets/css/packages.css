@@ -121,7 +121,7 @@
     transform: none !important;
 }
 
-.fts-v2-package-card > .fts-v2-badge-lowest {
+.fts-v2-package-card.fts-v2-has-primary-badge > .fts-v2-badge-lowest {
     top: 10px !important;
     left: auto !important;
     right: 14px !important;
@@ -146,7 +146,7 @@
 
 }
 
-.fts-v2-package-card > .fts-v2-badge-lowest.fts-v2-badge-alt {
+.fts-v2-package-card.fts-v2-has-primary-badge > .fts-v2-badge-lowest.fts-v2-badge-alt {
     left: auto !important;
     right: 14px !important;
     top: 10px !important;

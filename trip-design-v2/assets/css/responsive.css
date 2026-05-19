@@ -67,7 +67,7 @@
     text-align: center !important;
 }
 
-.fts-v2-packages-grid .fts-v2-package-card > .fts-v2-badge-lowest {
+.fts-v2-packages-grid .fts-v2-package-card.fts-v2-has-primary-badge > .fts-v2-badge-lowest {
     top: 10px !important;
     left: auto !important;
     right: 14px !important;
