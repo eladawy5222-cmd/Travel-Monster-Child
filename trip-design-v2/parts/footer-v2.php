@@ -44,13 +44,10 @@ $dest_names = ( ! empty( $destination_terms ) && ! is_wp_error( $destination_ter
 $from_text = ! empty( $dest_names ) ? $dest_names[0] : esc_html__( 'This Destination', 'fts' );
 ?>
 
-<section class="fts-v2-related-section">
-    <div class="fts-v2-container">
-        <h2 class="fts-v2-section-title"><?php echo esc_html( fts_v2_safe_sprintf( __( 'More trips from %s', 'fts' ), array( $from_text ), 'More trips from ' . $from_text ) ); ?></h2>
-
-        <div class="fts-v2-related-grid fts-v2-related-slider">
-            <?php $fts_related_rendered = 0; ?>
-            <?php while ( $related->have_posts() ) : $related->the_post();
+<?php
+$fts_related_rendered = 0;
+ob_start();
+while ( $related->have_posts() ) : $related->the_post();
                 $r_id       = get_the_ID();
                 $r_settings = get_post_meta( $r_id, 'wp_travel_engine_setting', true );
                 $r_settings = is_array( $r_settings ) ? $r_settings : array();
@@ -133,9 +130,20 @@ $from_text = ! empty( $dest_names ) ? $dest_names[0] : esc_html__( 'This Destina
                     <span class="fts-v2-related-view-btn"><?php echo esc_html__( 'View', 'fts' ); ?> <i class="fa fa-arrow-right"></i></span>
                 </div>
             </a>
-            <?php endwhile; wp_reset_postdata(); ?>
+<?php endwhile; ?>
+<?php
+$fts_related_cards_html = trim( (string) ob_get_clean() );
+wp_reset_postdata();
+if ( $fts_related_rendered <= 0 || $fts_related_cards_html === '' ) {
+    return;
+}
+?>
+
+<section class="fts-v2-related-section">
+    <div class="fts-v2-container">
+        <h2 class="fts-v2-section-title"><?php echo esc_html( fts_v2_safe_sprintf( __( 'More trips from %s', 'fts' ), array( $from_text ), 'More trips from ' . $from_text ) ); ?></h2>
+        <div class="fts-v2-related-grid fts-v2-related-slider">
+            <?php echo $fts_related_cards_html; ?>
         </div>
     </div>
 </section>
-
-<?php if ( empty( $fts_related_rendered ) ) { return; } ?>
