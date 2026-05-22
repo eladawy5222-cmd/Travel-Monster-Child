@@ -1570,22 +1570,6 @@ class FTS_Trip_Redesign_V2 {
         $packages_for_js = array();
         foreach ( $data['packages_list'] as $pkg_js ) {
             if ( ! is_array( $pkg_js ) ) continue;
-            $pkg_js['display_price'] = fts_v2_convert_price( $pkg_js['display_price'] );
-            $pkg_js['old_price']     = fts_v2_convert_price( $pkg_js['old_price'] );
-            if ( ! empty( $pkg_js['categories'] ) ) {
-                foreach ( $pkg_js['categories'] as &$cat_js ) {
-                    $cat_js['price']         = fts_v2_convert_price( $cat_js['price'] );
-                    $cat_js['sale_price']    = fts_v2_convert_price( $cat_js['sale_price'] );
-                    $cat_js['display_price'] = fts_v2_convert_price( $cat_js['display_price'] );
-                    if ( ! empty( $cat_js['group_pricing'] ) ) {
-                        foreach ( $cat_js['group_pricing'] as &$gp_js ) {
-                            $gp_js['price'] = fts_v2_convert_price( $gp_js['price'] );
-                        }
-                        unset( $gp_js );
-                    }
-                }
-                unset( $cat_js );
-            }
             $packages_for_js[] = $pkg_js;
         }
 

@@ -2354,6 +2354,51 @@
             ftsTiObserver.observe(document.body, { childList: true, subtree: true });
         }
 
+        $(document).off('click.ftsPkgDesc', '.fts-v2-package-desc-wrap .fts-v2-desc-toggle');
+        $(document).on('click.ftsPkgDesc', '.fts-v2-package-desc-wrap .fts-v2-desc-toggle', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var $wrap = $btn.closest('.fts-v2-package-desc-wrap');
+            var $desc = $wrap.find('.fts-v2-package-desc').first();
+            if (!$desc.length) return;
+
+            var expanded = ($btn.attr('aria-expanded') === 'true');
+            var shortText = $desc.attr('data-short') || '';
+            var fullText  = $desc.attr('data-full') || '';
+            if (!fullText || fullText === shortText) return;
+
+            if (expanded) {
+                $desc.text(shortText);
+                $btn.attr('aria-expanded', 'false').text($btn.data('more') || 'Read more');
+                $desc.removeClass('is-expanded');
+                $wrap.removeClass('expanded');
+            } else {
+                $desc.text(fullText);
+                $btn.attr('aria-expanded', 'true').text($btn.data('less') || 'Show less');
+                $desc.addClass('is-expanded');
+                $wrap.addClass('expanded');
+            }
+        });
+
+        $('.fts-v2-package-desc-wrap').each(function() {
+            var $wrap = $(this);
+            var $btn = $wrap.find('.fts-v2-desc-toggle').first();
+            var $desc = $wrap.find('.fts-v2-package-desc').first();
+            if (!$btn.length || !$desc.length) return;
+
+            var shortText = $desc.attr('data-short') || '';
+            var fullText  = $desc.attr('data-full') || '';
+            if (!shortText && fullText) shortText = fullText;
+            $desc.text(shortText);
+            $btn.attr('aria-expanded', 'false').text($btn.data('more') || 'Read more');
+            $desc.removeClass('is-expanded');
+            $wrap.removeClass('expanded');
+
+            if (!fullText || fullText === shortText) {
+                $btn.hide();
+            }
+        });
+
         /* ══════════════════════════════════════════════
            Mobile Sticky Book Now Bar
            ══════════════════════════════════════════════ */
@@ -2401,55 +2446,6 @@
     } else {
         ftsV2Init();
     }
-
-    /* ─── Package description show more / show less ─── */
-    function ftsCheckDescOverflow() {
-        var wraps = document.querySelectorAll('.fts-v2-package-desc-wrap');
-        wraps.forEach(function(wrap) {
-            var desc = wrap.querySelector('.fts-v2-desc-clamped');
-            var btn = wrap.querySelector('.fts-v2-desc-toggle');
-            if (!desc || !btn) return;
-            var dShort = desc.getAttribute('data-short') || '';
-            var dFull = desc.getAttribute('data-full') || '';
-            if (dFull && dShort && dFull !== dShort) {
-                btn.style.display = '';
-                return;
-            }
-            if (desc.scrollHeight > desc.clientHeight + 1) {
-                btn.style.display = '';
-            } else if (!wrap.classList.contains('expanded')) {
-                btn.style.display = 'none';
-            }
-        });
-    }
-    window.ftsCheckDescOverflow = ftsCheckDescOverflow;
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', ftsCheckDescOverflow);
-    } else {
-        ftsCheckDescOverflow();
-    }
-    window.addEventListener('resize', ftsCheckDescOverflow);
-
-    document.addEventListener('click', function(e) {
-        var btn = e.target.closest('.fts-v2-desc-toggle');
-        if (!btn) return;
-        var wrap = btn.closest('.fts-v2-package-desc-wrap');
-        if (!wrap) return;
-        var isExpanded = wrap.classList.toggle('expanded');
-        btn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
-        var desc = wrap.querySelector('.fts-v2-desc-clamped');
-        if (desc) {
-            var dShort = desc.getAttribute('data-short') || '';
-            var dFull = desc.getAttribute('data-full') || '';
-            if (dShort && dFull && dShort !== dFull) {
-                desc.textContent = isExpanded ? dFull : dShort;
-            }
-        }
-        var more = btn.getAttribute('data-more') || (typeof ftsV2Data !== 'undefined' && ftsV2Data.i18n && ftsV2Data.i18n.show_more ? ftsV2Data.i18n.show_more : 'Show more');
-        var less = btn.getAttribute('data-less') || (typeof ftsV2Data !== 'undefined' && ftsV2Data.i18n && ftsV2Data.i18n.show_less ? ftsV2Data.i18n.show_less : 'Show less');
-        btn.textContent = isExpanded ? less : more;
-        ftsCheckDescOverflow();
-    });
 
 })();
 
