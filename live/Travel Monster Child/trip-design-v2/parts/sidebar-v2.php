@@ -7,6 +7,27 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 $wa_raw    = trim( (string) apply_filters( 'fts_whatsapp_number', '+201000479285' ) );
 $wa_digits = preg_replace( '/\D+/', '', $wa_raw );
+
+$sidebar_display_price = floatval( $display_price ?? 0 );
+$sidebar_old_price     = floatval( $old_price ?? 0 );
+$sidebar_discount_pct  = intval( $discount_pct ?? 0 );
+
+if ( ! empty( $packages_list ) && is_array( $packages_list ) ) {
+    $best_pkg = null;
+    foreach ( $packages_list as $spkg ) {
+        if ( ! is_array( $spkg ) ) continue;
+        $sp = floatval( $spkg['display_price'] ?? 0 );
+        if ( $sp <= 0 ) continue;
+        if ( $best_pkg === null || $sp < floatval( $best_pkg['display_price'] ?? 0 ) ) {
+            $best_pkg = $spkg;
+        }
+    }
+    if ( is_array( $best_pkg ) ) {
+        $sidebar_display_price = floatval( $best_pkg['display_price'] ?? $sidebar_display_price );
+        $sidebar_old_price     = floatval( $best_pkg['old_price'] ?? $sidebar_old_price );
+        $sidebar_discount_pct  = intval( $best_pkg['discount_pct'] ?? $sidebar_discount_pct );
+    }
+}
 ?>
 
 <div class="fts-v2-sidebar-wrapper" id="fts-v2-booking-sidebar">
@@ -26,14 +47,14 @@ $wa_digits = preg_replace( '/\D+/', '', $wa_raw );
                     <?php endif; ?>
                 </div>
                 <div class="fts-v2-booking-price-row">
-                    <?php if ( $old_price > 0 ) : ?>
-                        <span class="fts-v2-booking-old-price"><?php echo esc_html( wte_get_formated_price( $old_price ) ); ?></span>
+                    <?php if ( $sidebar_old_price > 0 ) : ?>
+                        <span class="fts-v2-booking-old-price"><?php echo esc_html( function_exists( 'fts_v2_format_converted_price_for_display' ) ? fts_v2_format_converted_price_for_display( $sidebar_old_price ) : wte_get_formated_price( $sidebar_old_price ) ); ?></span>
                     <?php endif; ?>
-                    <span class="fts-v2-booking-current-price"><?php echo esc_html( wte_get_formated_price( $display_price ) ); ?></span>
+                    <span class="fts-v2-booking-current-price"><?php echo esc_html( function_exists( 'fts_v2_format_converted_price_for_display' ) ? fts_v2_format_converted_price_for_display( $sidebar_display_price ) : wte_get_formated_price( $sidebar_display_price ) ); ?></span>
                     <span class="fts-v2-booking-per-person"><?php echo esc_html__( '/ person', 'fts' ); ?></span>
                 </div>
-                <?php if ( $discount_pct > 0 ) : ?>
-                <div class="fts-v2-booking-save-badge"><?php echo esc_html__( 'SAVE', 'fts' ); ?> <?php echo intval( $discount_pct ); ?>%</div>
+                <?php if ( $sidebar_discount_pct > 0 ) : ?>
+                <div class="fts-v2-booking-save-badge"><?php echo esc_html__( 'SAVE', 'fts' ); ?> <?php echo intval( $sidebar_discount_pct ); ?>%</div>
                 <?php endif; ?>
             </div>
 

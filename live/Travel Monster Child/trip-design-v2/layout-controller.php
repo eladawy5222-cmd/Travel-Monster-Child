@@ -145,18 +145,78 @@ if ( ! function_exists( 'fts_v2_clean_package_feature_line_for_display' ) ) {
     }
 }
 
+if ( ! function_exists( 'fts_v2_is_bad_package_feature_for_display' ) ) {
+    function fts_v2_is_bad_package_feature_for_display( $feature, $pkg_short_desc = '', $pkg_full_desc = '' ) {
+        $f = is_scalar( $feature ) ? trim( (string) $feature ) : '';
+        if ( $f === '' ) return true;
+        if ( function_exists( 'fts_v2_is_package_price_line' ) && fts_v2_is_package_price_line( $f ) ) return true;
+        if ( preg_match( '/\b(Source|GetYourGuide|Read more|Show more|View pickup area|Instructor|Starting time)\b/iu', $f ) ) return true;
+        if ( strlen( $f ) > 90 ) return true;
+
+        $f_lc = strtolower( $f );
+        $f_lc = preg_replace( '/\s+/u', ' ', $f_lc );
+        if ( preg_match( '/[\.!\?].*[\.!\?]/u', $f_lc ) ) return true;
+
+        $phrases = array(
+            'this option',
+            "doesn't include",
+            'meet at',
+            'ticket including',
+            'national park entry fees',
+            'governorate',
+            'source',
+            'getyourguide',
+            'starting time',
+            'view pickup area',
+            'check to see if your accommodation',
+        );
+        foreach ( $phrases as $p ) {
+            if ( strpos( $f_lc, $p ) !== false ) return true;
+        }
+
+        $sd = is_scalar( $pkg_short_desc ) ? strtolower( trim( (string) $pkg_short_desc ) ) : '';
+        $fd = is_scalar( $pkg_full_desc ) ? strtolower( trim( (string) $pkg_full_desc ) ) : '';
+        $sd = preg_replace( '/\s+/u', ' ', $sd );
+        $fd = preg_replace( '/\s+/u', ' ', $fd );
+
+        if ( $sd !== '' && ( strpos( $sd, $f_lc ) !== false || strpos( $f_lc, $sd ) !== false ) ) return true;
+        if ( $fd !== '' && ( strpos( $fd, $f_lc ) !== false || strpos( $f_lc, $fd ) !== false ) ) return true;
+
+        return false;
+    }
+}
+
+if ( ! function_exists( 'fts_v2_format_price_number_with_active_currency_symbol' ) ) {
+    function fts_v2_format_price_number_with_active_currency_symbol( $price ) {
+        $symbol = function_exists( 'fts_v2_get_active_currency_symbol' ) ? (string) fts_v2_get_active_currency_symbol() : '';
+        $settings = get_option( 'wp_travel_engine_settings', array() );
+        $decimals = isset( $settings['decimal_digits'] ) && $settings['decimal_digits'] !== 'default' ? intval( $settings['decimal_digits'] ) : 0;
+        return $symbol . number_format( floatval( $price ), $decimals );
+    }
+}
+
 if ( ! function_exists( 'fts_v2_format_converted_price_for_display' ) ) {
     function fts_v2_format_converted_price_for_display( $price ) {
         $raw = floatval( $price );
-        $val = $raw;
+        $converted = $raw;
         if ( function_exists( 'fts_v2_convert_price' ) ) {
-            $val = fts_v2_convert_price( $raw );
-            if ( ! is_numeric( $val ) ) $val = $raw;
+            $converted = fts_v2_convert_price( $raw );
+            if ( ! is_numeric( $converted ) ) $converted = $raw;
         }
-        if ( function_exists( 'wte_get_formated_price' ) ) {
-            return wte_get_formated_price( $val );
+        if ( function_exists( 'fts_v2_format_price_number_with_active_currency_symbol' ) ) {
+            return fts_v2_format_price_number_with_active_currency_symbol( $converted );
         }
-        return number_format( floatval( $val ), 2 );
+        return number_format( floatval( $converted ), 2 );
+    }
+}
+
+if ( ! function_exists( 'fts_v2_get_display_currency_rate' ) ) {
+    function fts_v2_get_display_currency_rate() {
+        if ( function_exists( 'fts_v2_convert_price' ) ) {
+            $one = fts_v2_convert_price( 1 );
+            if ( is_numeric( $one ) && floatval( $one ) > 0 ) return floatval( $one );
+        }
+        return 1;
     }
 }
 
@@ -1183,6 +1243,7 @@ class FTS_Trip_Redesign_V2 {
                                 $f0c = fts_v2_clean_package_feature_line_for_display( $f0 );
                                 if ( $f0c === '' ) continue;
                                 if ( fts_v2_is_package_price_line( $f0c ) ) continue;
+                                if ( function_exists( 'fts_v2_is_bad_package_feature_for_display' ) && fts_v2_is_bad_package_feature_for_display( $f0c, $pkg_short_desc, $pkg_full_desc ) ) continue;
                                 $cleaned_features[] = $f0c;
                             }
                             $features = $cleaned_features;
@@ -1549,6 +1610,7 @@ class FTS_Trip_Redesign_V2 {
             'decimalDigits'  => ( isset( $settings['decimal_digits'] ) && $settings['decimal_digits'] !== 'default' ) ? intval( $settings['decimal_digits'] ) : 0,
             'checkoutUrl'    => $data['checkout_url'],
             'currencySymbol' => fts_v2_get_active_currency_symbol(),
+            'displayCurrencyRate' => function_exists( 'fts_v2_get_display_currency_rate' ) ? fts_v2_get_display_currency_rate() : 1,
             'whatsappNumber' => $whatsapp_number_js,
             'payLater'       => array(
                 'enabled'     => ! empty( $data['pp_eligible'] ),

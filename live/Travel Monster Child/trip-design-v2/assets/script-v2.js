@@ -139,8 +139,14 @@
 
         var mobSymbol = data.currencySymbol || '$';
         var mobDecimals = parseInt(data.decimalDigits, 10) || 0;
-        function fmtPriceCompact(amt) {
+        var displayCurrencyRate = parseFloat(data.displayCurrencyRate || data.currencyRate || 1);
+        if (!isFinite(displayCurrencyRate) || displayCurrencyRate <= 0) displayCurrencyRate = 1;
+        function convertForDisplay(amt) {
             var n = parseFloat(amt) || 0;
+            return n * displayCurrencyRate;
+        }
+        function fmtPriceCompact(amt) {
+            var n = convertForDisplay(amt);
             var parts = n.toFixed(mobDecimals).split('.');
             parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             return mobSymbol + parts.join('.');
@@ -1190,7 +1196,7 @@
             var bmOpenSource = '';
 
             function fmtPrice(amt) {
-                var n = parseFloat(amt) || 0;
+                var n = convertForDisplay(amt);
                 var dec = parseInt((data && data.decimalDigits) || 0, 10) || 0;
                 var parts = n.toFixed(dec).split('.');
                 parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');

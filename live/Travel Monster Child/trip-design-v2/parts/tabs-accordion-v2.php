@@ -571,7 +571,7 @@ $fts_col_about_items = array_slice( $fts_col_about_items, 0, 6 );
                     <div class="fts-v2-package-desc-wrap">
                         <p class="fts-v2-package-desc fts-v2-desc-clamped" data-short="<?php echo esc_attr( $pkg_short_desc ); ?>" data-full="<?php echo esc_attr( $pkg_full_desc ); ?>"><?php echo esc_html( $pkg_short_desc ); ?></p>
                         <?php if ( $has_more_desc ) : ?>
-                        <button type="button" class="fts-v2-desc-toggle" aria-expanded="false" style="display:none" data-more="<?php echo esc_attr__( 'Read more', 'fts' ); ?>" data-less="<?php echo esc_attr__( 'Show less', 'fts' ); ?>"><?php echo esc_html__( 'Read more', 'fts' ); ?></button>
+                        <button type="button" class="fts-v2-desc-toggle" aria-expanded="false" data-more="<?php echo esc_attr__( 'Read more', 'fts' ); ?>" data-less="<?php echo esc_attr__( 'Show less', 'fts' ); ?>"><?php echo esc_html__( 'Read more', 'fts' ); ?></button>
                         <?php endif; ?>
                     </div>
                     <?php endif; ?>
@@ -609,10 +609,29 @@ $fts_col_about_items = array_slice( $fts_col_about_items, 0, 6 );
 
                     <?php
                         $all_feats = ! empty( $pkg['features_all'] ) ? $pkg['features_all'] : ( ! empty( $pkg['features'] ) ? $pkg['features'] : array() );
+                        $filtered_feats = array();
+                        if ( ! empty( $all_feats ) && is_array( $all_feats ) ) {
+                            foreach ( $all_feats as $feat ) {
+                                $f0 = is_scalar( $feat ) ? trim( (string) $feat ) : '';
+                                if ( $f0 === '' ) continue;
+                                if ( function_exists( 'fts_v2_clean_package_feature_line_for_display' ) ) {
+                                    $f0 = fts_v2_clean_package_feature_line_for_display( $f0 );
+                                } else {
+                                    $f0 = trim( wp_strip_all_tags( $f0 ) );
+                                }
+                                if ( $f0 === '' ) continue;
+                                if ( function_exists( 'fts_v2_is_package_price_line' ) && fts_v2_is_package_price_line( $f0 ) ) continue;
+                                if ( preg_match( '/\b(Source|GetYourGuide|Read more|Show more|View pickup area|Instructor|Starting time)\b/iu', $f0 ) ) continue;
+                                if ( strlen( $f0 ) > 90 ) continue;
+                                if ( $pkg_short_desc !== '' && stripos( $pkg_short_desc, $f0 ) !== false ) continue;
+                                if ( $pkg_full_desc !== '' && stripos( $pkg_full_desc, $f0 ) !== false ) continue;
+                                $filtered_feats[] = $f0;
+                            }
+                        }
                     ?>
-                    <?php if ( ! empty( $all_feats ) ) : ?>
+                    <?php if ( ! empty( $filtered_feats ) ) : ?>
                     <ul class="fts-v2-package-features">
-                        <?php foreach ( $all_feats as $feat ) : ?>
+                        <?php foreach ( $filtered_feats as $feat ) : ?>
                         <li>
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38a169" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                             <?php echo esc_html( $feat ); ?>
