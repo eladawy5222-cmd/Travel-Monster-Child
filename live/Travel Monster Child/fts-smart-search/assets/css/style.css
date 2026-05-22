@@ -1,0 +1,690 @@
+/* Main Wrapper */
+.fts-smart-search-wrapper {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    font-family: var(--fts-font-body, 'Poppins', ui-sans-serif, system-ui, sans-serif);
+}
+
+/* Trigger Icon - Minimal & Clean */
+.fts-ss-trigger {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    /* Slightly squared for modern feel */
+    cursor: pointer;
+    background: transparent;
+    /* Cleaner look */
+    color: #334155;
+    border: 1px solid transparent;
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: all 0.2s ease;
+}
+
+.fts-ss-trigger:hover,
+.fts-smart-search-wrapper.active .fts-ss-trigger {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.fts-ss-trigger:focus-visible {
+    outline: 2px solid rgba(232, 80, 30, 0.55);
+    outline-offset: 2px;
+}
+
+.fts-ss-trigger i {
+    font-size: 18px;
+}
+.fts-ss-trigger .fts-ss-icon {
+    display: block;
+}
+
+/* Tooltip / Card Popup */
+.fts-ss-tooltip {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 380px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06),
+        0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    /* Layered Shadow */
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateY(15px) scale(0.95) !important;
+    transform-origin: top right !important;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    /* Smooth Bouncy Effect */
+    z-index: 9999 !important;
+}
+
+/* No Arrow - Clean Floating Card */
+.fts-ss-tooltip::before {
+    display: none !important;
+}
+
+.fts-smart-search-wrapper.active .fts-ss-tooltip {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) scale(1) !important;
+}
+
+.fts-ss-tooltip-inner {
+    padding: 20px;
+}
+
+.fts-smart-search-wrapper .fts-hero-search-form {
+    display: flex !important;
+    align-items: center !important;
+    background: #ffffff !important;
+    border-radius: 50px !important;
+    padding: 6px 6px 6px 18px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+    border: none !important;
+    width: 100% !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-search-field {
+    display: flex !important;
+    align-items: center !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-search-icon {
+    color: #94a3b8 !important;
+    flex-shrink: 0 !important;
+    margin-right: 10px !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-search-input {
+    flex: 1 !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    font-family: var(--fts-font-body, 'Poppins', ui-sans-serif, system-ui, sans-serif) !important;
+    font-size: 15px !important;
+    color: #1e293b !important;
+    padding: 12px 0 !important;
+    min-width: 0 !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    box-shadow: none !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-search-input::placeholder {
+    color: #94a3b8 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-search-input::-webkit-search-cancel-button {
+    display: none !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-search-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: #f3680f !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 50px !important;
+    width: auto !important;
+    min-width: 116px !important;
+    height: auto !important;
+    padding: 12px 18px !important;
+    font-family: var(--fts-font-body, 'Poppins', ui-sans-serif, system-ui, sans-serif) !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease, transform 0.15s ease !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    line-height: 1.3 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-search-btn:hover {
+    background: #d45b0a !important;
+    transform: scale(1.02) !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-search-btn:active {
+    transform: scale(0.98) !important;
+}
+
+.fts-smart-search-wrapper .screen-reader-text {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    border: 0 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-results {
+    display: none !important;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+    overflow: hidden !important;
+    max-height: 320px !important;
+    overflow-y: auto !important;
+    margin-top: 10px !important;
+    z-index: 1 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-results.is-visible {
+    display: block !important;
+    animation: ftsHeroSlideDown 0.2s ease !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-loading {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    padding: 22px 18px !important;
+    color: #64748b !important;
+    font-family: var(--fts-font-body, 'Poppins', ui-sans-serif, system-ui, sans-serif) !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-spinner {
+    width: 18px !important;
+    height: 18px !important;
+    border: 2.5px solid #e2e8f0 !important;
+    border-top-color: #f3680f !important;
+    border-radius: 50% !important;
+    animation: ftsHeroSpin 0.6s linear infinite !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-no-results {
+    padding: 22px 18px !important;
+    text-align: center !important;
+    color: #64748b !important;
+    font-family: var(--fts-font-body, 'Poppins', ui-sans-serif, system-ui, sans-serif) !important;
+    font-size: 14px !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-no-results svg {
+    display: block !important;
+    margin: 0 auto 10px !important;
+    color: #cbd5e1 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-card {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    padding: 12px 16px !important;
+    text-decoration: none !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    transition: background 0.12s ease !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-card:last-of-type {
+    border-bottom: none !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-card:hover {
+    background: #f8fafc !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-thumb {
+    width: 56px !important;
+    height: 42px !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    flex-shrink: 0 !important;
+    background: #f1f5f9 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-thumb img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-thumb-placeholder {
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #e2e8f0 !important;
+    color: #94a3b8 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-title {
+    font-family: var(--fts-font-heading, 'Poppins', ui-sans-serif, system-ui, sans-serif) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    margin: 0 0 2px 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-meta {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    font-family: var(--fts-font-body, 'Poppins', ui-sans-serif, system-ui, sans-serif) !important;
+    font-size: 12px !important;
+    color: #64748b !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-meta span {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-meta svg {
+    width: 11px !important;
+    height: 11px !important;
+    flex-shrink: 0 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-price {
+    text-align: right !important;
+    flex-shrink: 0 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-old-price {
+    font-size: 11px !important;
+    color: #94a3b8 !important;
+    text-decoration: line-through !important;
+    display: block !important;
+    line-height: 1 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-current-price {
+    font-family: var(--fts-font-heading, 'Poppins', ui-sans-serif, system-ui, sans-serif) !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #f3680f !important;
+    line-height: 1.2 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-result-price-label {
+    font-size: 10px !important;
+    color: #94a3b8 !important;
+    display: block !important;
+    line-height: 1 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-view-all {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 14px !important;
+    background: #f8fafc !important;
+    text-decoration: none !important;
+    font-family: var(--fts-font-heading, 'Poppins', ui-sans-serif, system-ui, sans-serif) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #f3680f !important;
+    transition: background 0.12s ease !important;
+    border-top: 1px solid #f1f5f9 !important;
+}
+
+.fts-smart-search-wrapper .fts-hero-view-all:hover {
+    background: #fef3e8 !important;
+    color: #d45b0a !important;
+}
+
+@keyframes ftsHeroSlideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ftsHeroSpin {
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .fts-smart-search-wrapper .fts-hero-results {
+        max-height: 260px !important;
+        margin-top: 12px !important;
+    }
+}
+
+/* Header Text */
+.fts-ss-header {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.fts-ss-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+/* Search Input Group - Flexbox Layout */
+.fts-ss-input-group {
+    position: relative;
+    margin-bottom: 24px;
+    height: 52px;
+    /* Fixed height */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* Space between input and button */
+}
+
+/* Remove focus-within logic as we don't have a single border anymore */
+
+.fts-ss-submit-btn {
+    display: flex;
+    /* Flex center for icon */
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    /* Square button */
+    height: 100%;
+    background: #ff7f50;
+    /* Brand Color */
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+}
+
+.fts-ss-submit-btn:hover {
+    background: #e66a3c;
+}
+
+.fts-ss-input {
+    flex: 1;
+    /* Take remaining space */
+    height: 100%;
+    border: none !important;
+    background: #f1f5f9 !important;
+    /* Light gray background */
+    padding: 0 16px !important;
+    /* Padding on both sides */
+    border-radius: 12px;
+    /* Rounded input */
+    font-size: 16px;
+    color: #0f172a;
+    outline: none;
+    box-shadow: none !important;
+    width: auto;
+    transition: all 0.2s ease;
+}
+
+.fts-ss-input:focus {
+    background: #fff !important;
+    box-shadow: 0 0 0 2px #e2e8f0 !important;
+    /* Ring effect */
+}
+
+.fts-ss-input::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+}
+
+/* Popular Searches Area */
+.fts-ss-popular {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 20px;
+}
+
+.fts-ss-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 12px;
+    display: block;
+    letter-spacing: 0.05em;
+}
+
+.fts-ss-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.fts-ss-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.fts-ss-tag:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #0f172a;
+    transform: translateY(-1px);
+}
+
+/* Close Button (Mobile Only) */
+.fts-ss-close-btn {
+    display: none;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    background: #f1f5f9;
+    color: #64748b;
+    border-radius: 8px;
+    border: none;
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s;
+}
+
+.fts-ss-close-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.fts-ss-close-btn:focus-visible {
+    outline: 2px solid rgba(232, 80, 30, 0.55);
+    outline-offset: 2px;
+}
+
+/* Mobile Responsive - Centered Modal Card */
+@media (max-width: 768px) {
+    .fts-ss-tooltip {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        right: auto !important;
+        bottom: auto !important;
+        width: calc(100% - 40px) !important;
+        max-width: 380px !important;
+        height: auto !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+        border-radius: 20px !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+        transform: translate(-50%, -50%) scale(0.9) !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        padding-bottom: 0 !important;
+        z-index: 99999 !important;
+        display: block !important;
+        overflow: hidden !important;
+    }
+
+    /* Fixed Overlay */
+    .fts-smart-search-wrapper.active::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.6);
+        z-index: 99998;
+        backdrop-filter: blur(4px);
+        animation: ftsFadeIn 0.3s ease forwards;
+    }
+
+    /* Active Animation State */
+    .fts-smart-search-wrapper.active .fts-ss-tooltip {
+        transform: translate(-50%, -50%) scale(1) !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .fts-ss-close-btn {
+        display: flex !important;
+        top: 14px !important;
+        right: 14px !important;
+        background: #f1f5f9 !important;
+        z-index: 2 !important;
+    }
+
+    .fts-ss-tooltip-inner {
+        padding: 48px 20px 24px !important;
+        overflow-y: auto !important;
+        max-height: 75vh !important;
+    }
+
+    .fts-smart-search-wrapper .fts-hero-search-form {
+        flex-direction: column !important;
+        border-radius: 16px !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        gap: 12px !important;
+    }
+
+    .fts-smart-search-wrapper .fts-hero-search-field {
+        width: 100% !important;
+        background: #f8fafc !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 4px 14px !important;
+    }
+
+    .fts-smart-search-wrapper .fts-hero-search-input {
+        font-size: 15px !important;
+        padding: 12px 0 !important;
+    }
+
+    .fts-smart-search-wrapper .fts-hero-search-btn {
+        width: 100% !important;
+        min-width: unset !important;
+        justify-content: center !important;
+        border-radius: 12px !important;
+        padding: 14px 18px !important;
+        font-size: 15px !important;
+    }
+
+    .fts-smart-search-wrapper .fts-hero-results {
+        max-height: 220px !important;
+        border-radius: 12px !important;
+        box-shadow: none !important;
+        border: 1px solid #e2e8f0 !important;
+        margin-top: 12px !important;
+    }
+
+    .fts-smart-search-wrapper .fts-hero-result-card {
+        gap: 10px !important;
+        padding: 10px 12px !important;
+    }
+
+    .fts-smart-search-wrapper .fts-hero-result-thumb {
+        width: 44px !important;
+        height: 34px !important;
+        border-radius: 6px !important;
+    }
+
+    .fts-smart-search-wrapper .fts-hero-result-title {
+        font-size: 13px !important;
+    }
+
+    .fts-smart-search-wrapper .fts-hero-result-meta {
+        font-size: 11px !important;
+        gap: 6px !important;
+    }
+
+    .fts-smart-search-wrapper .fts-hero-result-current-price {
+        font-size: 13px !important;
+    }
+
+    .fts-smart-search-wrapper .fts-hero-view-all {
+        font-size: 12px !important;
+        padding: 10px !important;
+        border-radius: 0 0 12px 12px !important;
+    }
+
+    .fts-ss-popular {
+        margin-top: 16px !important;
+    }
+
+    .fts-ss-tags {
+        gap: 6px !important;
+    }
+
+    .fts-ss-tag {
+        font-size: 12px !important;
+        padding: 5px 10px !important;
+    }
+}
+
+@keyframes ftsFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+.fts-ss-submit-btn .fts-ss-icon {
+    display: block;
+}
+.fts-ss-close-btn .fts-ss-icon {
+    display: block;
+}

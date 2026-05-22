@@ -1,0 +1,36 @@
+/* ============================================================================
+   FTS V2 - Main Layout (Two-Column)
+   ============================================================================ */
+.fts-v2-main-layout {
+    display: flex !important;
+    gap: 10px !important;
+    padding-top: 0 !important;
+    padding-bottom: 80px !important;
+    align-items: flex-start !important;
+}
+.fts-v2-content-col {
+    flex: 1 !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+}
+.fts-v2-sidebar-col {
+    width: 360px !important;
+    flex-shrink: 0 !important;
+    overflow: visible !important;
+    align-self: flex-start !important;
+}
+
+/* ── Desktop sticky: stretch sidebar column to full content height ── */
+/* position:sticky only works when the containing block is taller than the sticky element.
+   With align-items:flex-start the col shrinks to card height → no room to scroll.
+   On desktop we switch to stretch so the col is as tall as the content column. */
+@media (min-width: 993px) {
+    .fts-v2-main-layout {
+        align-items: stretch !important;
+    }
+    .fts-v2-sidebar-col {
+        align-self: stretch !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+}
