@@ -535,20 +535,52 @@ $fts_col_about_items = array_slice( $fts_col_about_items, 0, 6 );
 
                     <h3 class="fts-v2-package-name"><?php echo esc_html( $pkg['name'] ); ?></h3>
                     <?php
-                        $pkg_desc = ! empty( $pkg['description_full'] ) ? $pkg['description_full'] : ( ! empty( $pkg['description'] ) ? $pkg['description'] : '' );
+                        $pkg_short_desc = '';
+                        if ( ! empty( $pkg['card_short_description'] ) ) {
+                            $pkg_short_desc = (string) $pkg['card_short_description'];
+                        } elseif ( ! empty( $pkg['excerpt'] ) ) {
+                            $pkg_short_desc = (string) $pkg['excerpt'];
+                        } elseif ( ! empty( $pkg['description'] ) ) {
+                            $pkg_short_desc = (string) $pkg['description'];
+                        }
+
+                        $pkg_full_desc = '';
+                        if ( ! empty( $pkg['card_full_description'] ) ) {
+                            $pkg_full_desc = (string) $pkg['card_full_description'];
+                        } elseif ( ! empty( $pkg['description_full'] ) ) {
+                            $pkg_full_desc = (string) $pkg['description_full'];
+                        } else {
+                            $pkg_full_desc = $pkg_short_desc;
+                        }
+
+                        if ( function_exists( 'fts_v2_clean_package_card_text_for_display' ) ) {
+                            $pkg_short_desc = fts_v2_clean_package_card_text_for_display( $pkg_short_desc, (string) ( $pkg['name'] ?? '' ) );
+                            $pkg_full_desc  = fts_v2_clean_package_card_text_for_display( $pkg_full_desc, (string) ( $pkg['name'] ?? '' ) );
+                        }
+
+                        $pkg_short_desc = trim( preg_replace( '/\s+/u', ' ', $pkg_short_desc ) );
+                        $pkg_full_desc  = trim( preg_replace( '/\s+/u', ' ', $pkg_full_desc ) );
+
+                        if ( $pkg_short_desc === '' && $pkg_full_desc !== '' ) {
+                            $pkg_short_desc = wp_trim_words( $pkg_full_desc, 24, '…' );
+                        }
+
+                        $has_more_desc = ( $pkg_full_desc !== '' && $pkg_short_desc !== '' && $pkg_full_desc !== $pkg_short_desc && strlen( $pkg_full_desc ) > strlen( $pkg_short_desc ) + 20 );
                     ?>
-                    <?php if ( $pkg_desc !== '' ) : ?>
+                    <?php if ( $pkg_short_desc !== '' || $pkg_full_desc !== '' ) : ?>
                     <div class="fts-v2-package-desc-wrap">
-                        <p class="fts-v2-package-desc fts-v2-desc-clamped"><?php echo esc_html( $pkg_desc ); ?></p>
-                        <button type="button" class="fts-v2-desc-toggle" aria-expanded="false" style="display:none"><?php echo esc_html__( 'Show more', 'fts' ); ?></button>
+                        <p class="fts-v2-package-desc fts-v2-desc-clamped" data-short="<?php echo esc_attr( $pkg_short_desc ); ?>" data-full="<?php echo esc_attr( $pkg_full_desc ); ?>"><?php echo esc_html( $pkg_short_desc ); ?></p>
+                        <?php if ( $has_more_desc ) : ?>
+                        <button type="button" class="fts-v2-desc-toggle" aria-expanded="false" style="display:none" data-more="<?php echo esc_attr__( 'Read more', 'fts' ); ?>" data-less="<?php echo esc_attr__( 'Show less', 'fts' ); ?>"><?php echo esc_html__( 'Read more', 'fts' ); ?></button>
+                        <?php endif; ?>
                     </div>
                     <?php endif; ?>
 
                     <div class="fts-v2-package-price">
                         <?php if ( $pkg['old_price'] > 0 ) : ?>
-                        <span class="fts-v2-pkg-old"><?php echo wte_get_formated_price( $pkg['old_price'] ); ?></span>
+                        <span class="fts-v2-pkg-old"><?php echo function_exists( 'fts_v2_format_converted_price_for_display' ) ? fts_v2_format_converted_price_for_display( $pkg['old_price'] ) : wte_get_formated_price( $pkg['old_price'] ); ?></span>
                         <?php endif; ?>
-                        <span class="fts-v2-pkg-current"><?php echo wte_get_formated_price( $pkg['display_price'] ); ?></span>
+                        <span class="fts-v2-pkg-current"><?php echo function_exists( 'fts_v2_format_converted_price_for_display' ) ? fts_v2_format_converted_price_for_display( $pkg['display_price'] ) : wte_get_formated_price( $pkg['display_price'] ); ?></span>
                         <span class="fts-v2-pkg-per"><?php echo esc_html__( '/ person', 'fts' ); ?></span>
                     </div>
 
@@ -557,13 +589,22 @@ $fts_col_about_items = array_slice( $fts_col_about_items, 0, 6 );
                     <?php endif; ?>
 
                     <?php
-                        $dp = floatval( $pkg['display_price'] ?? 0 );
-                        $diff = ( $pkg_min_price !== null && $dp > 0 ) ? ( $dp - floatval( $pkg_min_price ) ) : 0;
+                        $pb_list = ! empty( $pkg['price_breakdown'] ) && is_array( $pkg['price_breakdown'] ) ? $pkg['price_breakdown'] : array();
                     ?>
-                    <?php if ( $pkg_min_price !== null && $dp > 0 ) : ?>
-                        <?php if ( $diff > 0.01 ) : ?>
-                            <div class="fts-v2-pkg-delta"><?php echo esc_html( sprintf( __( '+%s vs lowest', 'fts' ), wte_get_formated_price( $diff ) ) ); ?></div>
-                        <?php endif; ?>
+                    <?php if ( ! empty( $pb_list ) ) : ?>
+                    <ul class="fts-v2-package-features fts-v2-package-price-breakdown">
+                        <?php foreach ( $pb_list as $pb ) :
+                            $pb_label = trim( (string) ( is_array( $pb ) ? ( $pb['label'] ?? '' ) : '' ) );
+                            $pb_price = floatval( is_array( $pb ) ? ( $pb['price'] ?? 0 ) : 0 );
+                            if ( $pb_label === '' || $pb_price <= 0 ) continue;
+                            $pb_display = function_exists( 'fts_v2_format_converted_price_for_display' ) ? fts_v2_format_converted_price_for_display( $pb_price ) : wte_get_formated_price( $pb_price );
+                        ?>
+                        <li>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38a169" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            <?php echo esc_html( $pb_label ); ?>: <?php echo esc_html( $pb_display ); ?>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
                     <?php endif; ?>
 
                     <?php

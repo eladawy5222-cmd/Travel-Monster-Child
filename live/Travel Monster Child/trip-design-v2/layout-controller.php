@@ -76,6 +76,90 @@ if ( ! function_exists( 'fts_v2_convert_price' ) ) {
     }
 }
 
+if ( ! function_exists( 'fts_v2_clean_package_card_text_for_display' ) ) {
+    function fts_v2_clean_package_card_text_for_display( $text, $package_title = '' ) {
+        $t = is_scalar( $text ) ? (string) $text : '';
+        $t = trim( $t );
+        if ( $t === '' ) return '';
+
+        $t = html_entity_decode( strip_tags( $t ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+        $t = preg_replace( '/\s+/u', ' ', $t );
+        $t = trim( $t );
+
+        $pt = is_scalar( $package_title ) ? trim( (string) $package_title ) : '';
+        if ( $pt !== '' ) {
+            $pt = preg_replace( '/\s+/u', ' ', $pt );
+            $t = preg_replace( '/^' . preg_quote( $pt, '/' ) . '\s*[:\-–—]\s*/iu', '', $t );
+            $t = preg_replace( '/^' . preg_quote( $pt, '/' ) . '\s+/iu', '', $t );
+        }
+
+        $t = preg_replace( '/\b\d+\s*(Adult|Child|Infant)\s*[x×]\s*(?:€|\$|£|E£|USD|EUR|GBP|EGP)?\s*[\d][\d,\.]*/iu', '', $t );
+        $t = preg_replace( '/\b(Adult|Child|Infant)\s*:\s*(?:€|\$|£|E£|USD|EUR|GBP|EGP)?\s*[\d][\d,\.]*/iu', '', $t );
+        $t = preg_replace( '/\b(Adult|Child|Infant)\s+(?:€|\$|£|E£|USD|EUR|GBP|EGP)?\s*[\d][\d,\.]*/iu', '', $t );
+
+        $noise = array(
+            'Read more',
+            'Show more',
+            'Instructor:',
+            'View pickup area',
+            'Check to see if your accommodation',
+            'Starting time',
+            'Source: GetYourGuide',
+            'Source:',
+            'GetYourGuide',
+            'ranking_uuid',
+        );
+        foreach ( $noise as $n ) {
+            $t = preg_replace( '/' . preg_quote( $n, '/' ) . '/iu', '', $t );
+        }
+
+        $t = preg_replace( '/\s+/u', ' ', $t );
+        return trim( $t );
+    }
+}
+
+if ( ! function_exists( 'fts_v2_is_package_price_line' ) ) {
+    function fts_v2_is_package_price_line( $text ) {
+        $t = is_scalar( $text ) ? (string) $text : '';
+        $t = trim( html_entity_decode( strip_tags( $t ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+        if ( $t === '' ) return false;
+
+        $cur = '(?:€|\$|£|E£|USD|EUR|GBP|EGP)';
+        $amt = '(?:' . $cur . ')?\s*[\d][\d,\.]*';
+
+        if ( preg_match( '/^(Adult|Child|Infant)\s*[:\-]?\s*' . $amt . '\s*$/iu', $t ) ) return true;
+        if ( preg_match( '/^\d+\s*(Adult|Child|Infant)\s*[x×]\s*' . $amt . '\s*$/iu', $t ) ) return true;
+        if ( preg_match( '/^(Adult|Child|Infant)\s+' . $amt . '\s*$/iu', $t ) ) return true;
+
+        return false;
+    }
+}
+
+if ( ! function_exists( 'fts_v2_clean_package_feature_line_for_display' ) ) {
+    function fts_v2_clean_package_feature_line_for_display( $text ) {
+        $t = fts_v2_clean_package_card_text_for_display( $text, '' );
+        if ( $t === '' ) return '';
+        if ( fts_v2_is_package_price_line( $t ) ) return '';
+        if ( preg_match( '/\b(Source|GetYourGuide|Read more|Show more|View pickup area|Instructor|Starting time)\b/iu', $t ) ) return '';
+        return $t;
+    }
+}
+
+if ( ! function_exists( 'fts_v2_format_converted_price_for_display' ) ) {
+    function fts_v2_format_converted_price_for_display( $price ) {
+        $raw = floatval( $price );
+        $val = $raw;
+        if ( function_exists( 'fts_v2_convert_price' ) ) {
+            $val = fts_v2_convert_price( $raw );
+            if ( ! is_numeric( $val ) ) $val = $raw;
+        }
+        if ( function_exists( 'wte_get_formated_price' ) ) {
+            return wte_get_formated_price( $val );
+        }
+        return number_format( floatval( $val ), 2 );
+    }
+}
+
 if ( ! function_exists( 'fts_v2_safe_sprintf' ) ) {
     function fts_v2_safe_sprintf( $format, $args, $fallback = '' ) {
         try {
@@ -1038,13 +1122,41 @@ class FTS_Trip_Redesign_V2 {
                             $f_pct = round( ( ( $primary_cat['price'] - $primary_cat['display_price'] ) / $primary_cat['price'] ) * 100 );
                         }
 
-                        $pkg_content = get_post_field( 'post_content', $pkg_id );
-                        $pkg_desc_raw = trim( wp_strip_all_tags( (string) $pkg_content ) );
-                        if ( $pkg_desc_raw !== '' ) {
-                            $pkg_desc_raw = preg_replace( '/:([^\s])/', ': $1', $pkg_desc_raw );
+                        $pkg_title = get_the_title( $pkg_id );
+                        $pkg_excerpt = trim( wp_strip_all_tags( (string) get_post_field( 'post_excerpt', $pkg_id ) ) );
+                        $pkg_excerpt = html_entity_decode( $pkg_excerpt, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+                        $pkg_excerpt = preg_replace( '/\s+/u', ' ', $pkg_excerpt );
+                        $pkg_excerpt = trim( $pkg_excerpt );
+                        if ( function_exists( 'fts_v2_clean_package_card_text_for_display' ) ) {
+                            $pkg_excerpt = fts_v2_clean_package_card_text_for_display( $pkg_excerpt, $pkg_title );
+                        }
+
+                        $pkg_content = (string) get_post_field( 'post_content', $pkg_id );
+                        $pkg_content_clean_text = $pkg_content;
+                        if ( function_exists( 'fts_v2_clean_package_card_text_for_display' ) ) {
+                            $pkg_content_clean_text = fts_v2_clean_package_card_text_for_display( $pkg_content, $pkg_title );
+                        } else {
+                            $pkg_content_clean_text = trim( preg_replace( '/\s+/u', ' ', html_entity_decode( strip_tags( $pkg_content_clean_text ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) ) );
+                        }
+                        if ( $pkg_content_clean_text !== '' ) {
+                            $pkg_content_clean_text = preg_replace( '/:([^\s])/', ': $1', $pkg_content_clean_text );
+                        }
+
+                        $pkg_short_desc = '';
+                        if ( $pkg_excerpt !== '' ) {
+                            $pkg_short_desc = $pkg_excerpt;
+                        } elseif ( $pkg_content_clean_text !== '' ) {
+                            $pkg_short_desc = wp_trim_words( $pkg_content_clean_text, 24, '…' );
+                        }
+
+                        $pkg_full_desc = '';
+                        if ( $pkg_content_clean_text !== '' ) {
+                            $pkg_full_desc = $pkg_content_clean_text;
+                        } else {
+                            $pkg_full_desc = $pkg_short_desc;
                         }
                         $features = array();
-                        if ( ! empty( $pkg_content ) ) {
+                        if ( $pkg_content !== '' ) {
                             if ( preg_match_all( '/<li[^>]*>(.*?)<\/li>/si', $pkg_content, $fm ) ) {
                                 $features = array_map( 'wp_strip_all_tags', $fm[1] );
                             } else {
@@ -1065,13 +1177,55 @@ class FTS_Trip_Redesign_V2 {
                             }
                         }
                         $features = array_values( array_filter( array_map( 'trim', (array) $features ), function( $v ) { return $v !== ''; } ) );
+                        if ( function_exists( 'fts_v2_clean_package_feature_line_for_display' ) && function_exists( 'fts_v2_is_package_price_line' ) ) {
+                            $cleaned_features = array();
+                            foreach ( $features as $f0 ) {
+                                $f0c = fts_v2_clean_package_feature_line_for_display( $f0 );
+                                if ( $f0c === '' ) continue;
+                                if ( fts_v2_is_package_price_line( $f0c ) ) continue;
+                                $cleaned_features[] = $f0c;
+                            }
+                            $features = $cleaned_features;
+                        }
                         $feature_count = count( $features );
+
+                        $price_breakdown = array();
+                        if ( ! empty( $categories ) ) {
+                            foreach ( $categories as $cc ) {
+                                if ( ! is_array( $cc ) ) continue;
+                                $raw_label = trim( (string) ( $cc['label'] ?? '' ) );
+                                $raw_role  = trim( (string) ( $cc['role'] ?? '' ) );
+                                $raw_price = floatval( $cc['display_price'] ?? 0 );
+                                if ( $raw_price <= 0 ) $raw_price = floatval( $cc['sale_price'] ?? 0 );
+                                if ( $raw_price <= 0 ) $raw_price = floatval( $cc['price'] ?? 0 );
+                                if ( $raw_label === '' || $raw_price <= 0 ) continue;
+                                $price_breakdown[] = array(
+                                    'label' => $raw_label,
+                                    'price' => $raw_price,
+                                    'role'  => $raw_role,
+                                );
+                            }
+                            if ( ! empty( $price_breakdown ) ) {
+                                usort( $price_breakdown, function( $a, $b ) {
+                                    $prio = array( 'adult' => 0, 'child' => 1, 'infant' => 2 );
+                                    $ar = isset( $a['role'] ) ? (string) $a['role'] : '';
+                                    $br = isset( $b['role'] ) ? (string) $b['role'] : '';
+                                    $ap = array_key_exists( $ar, $prio ) ? $prio[ $ar ] : 9;
+                                    $bp = array_key_exists( $br, $prio ) ? $prio[ $br ] : 9;
+                                    if ( $ap !== $bp ) return $ap - $bp;
+                                    return strcasecmp( (string) ( $a['label'] ?? '' ), (string) ( $b['label'] ?? '' ) );
+                                } );
+                            }
+                        }
 
                         $packages_list[] = array(
                             'id'            => $pkg_id,
-                            'name'          => get_the_title( $pkg_id ),
-                            'description'   => wp_trim_words( $pkg_desc_raw, 10, '…' ),
-                            'description_full' => $pkg_desc_raw,
+                            'name'          => $pkg_title,
+                            'excerpt'       => $pkg_excerpt,
+                            'card_short_description' => $pkg_short_desc,
+                            'card_full_description'  => $pkg_full_desc,
+                            'description'   => wp_trim_words( $pkg_short_desc, 24, '…' ),
+                            'description_full' => $pkg_full_desc,
                             'features'      => array_map( function( $f ) { return wp_trim_words( $f, 18, '…' ); }, array_slice( $features, 0, 4 ) ),
                             'features_all'  => $features,
                             'features_full' => array_map( function( $f ) { return wp_trim_words( $f, 40, '…' ); }, array_slice( $features, 0, 10 ) ),
@@ -1082,6 +1236,7 @@ class FTS_Trip_Redesign_V2 {
                             'is_primary'    => ( $pkg_i === 0 ),
                             'badge'         => '',
                             'categories'    => $categories,
+                            'price_breakdown' => $price_breakdown,
                         );
 
                         $pkg_i++;
